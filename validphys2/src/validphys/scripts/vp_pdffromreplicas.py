@@ -28,7 +28,10 @@ import shutil
 import sys
 import tempfile
 
+import numpy as np
 import pandas as pd
+
+from scipy import stats
 from reportengine import colors
 from reportengine.compat import yaml
 
@@ -63,6 +66,67 @@ def check_none_or_gt_one(value):
     return ivalue
 
 
+def L1_norm(pdf_a, pdf_b):
+    """Calculate the distance between two replicas.
+    Parameters
+    -----------
+    pdf_a : numpy.array 
+        values of the a-th PDF replica of the given set
+    pdf_b : numpy.array
+        values of the b-th PDF replica of the given set
+    Returns
+    -------
+    float
+        the L1 distance of pdf_b from pdf_a.
+    """
+    assert pdf_a.shape == pdf_b.shape   # NOTE: the use of assert doesn't seem to match the NNPDF
+                                        # code style. I may want to change it later
+    point_by_point_difference = abs(pdf_a - pdf_b)
+    return point_by_point_difference.sum()
+
+
+def find_L1_most_distant(pdf_set):
+    """Find the most fluctuating PDF replica of a given pdf_set with the following criterion.
+        Every replica provides PDFs for each flavour.
+        For each flavour, calculate the most distant replica from the central value.
+        Select the replica that satisfies the requirement for most of the flavours.
+    Parameters
+    -----------
+    pdf_set : string
+        the name of the pdf_set, positional argument of vp-pdffromreplicas
+    ------
+    Returns
+    int
+        index of the most fluctuating replica.
+    """
+    # load pdf set
+    lhapdfset = pdf_set.load()
+    N_replicas = lhapdfset.n_members - 1
+
+    # set xgrid, qgrid and flavours
+    xgrid = np.logspace(-9, 0, dtype=np.float32)
+    flavours = [i-4 for i in range(9)]
+    flavours += [21]
+    qgrid = [1.65]
+    N_flavours = len(flavours)
+
+    # get grid values and compute distances for each flavour
+    res = lhapdfset.grid_values(flavours, xgrid, qgrid)
+    norms = np.asarray(
+            [
+                [
+                    L1_norm(res[0,flav,:], res[rep+1,flav,:]) 
+                for rep in range(N_replicas)
+            ] for flav in range(N_flavours)
+        ]
+    )
+
+    # get most distant replica for each flavour
+    maxs = np.asarray([np.argmax(norms[flav]) for flav in range(8)])
+
+    return stats.mode(maxs+1)[0]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -88,6 +152,12 @@ def main():
         action="store_true",
         help="Flag to save a CSV with a mapping of new replica indices to old replica indices.",
     )
+    parser.add_argument(
+        "--most-fluctuating",
+        "-f",
+        action="store_true",
+        help="Flag to sample the most fluctuating replica of the <input_pdf> set.",
+    )
     args = parser.parse_args()
 
     loader = FallbackLoader()
@@ -107,7 +177,13 @@ def main():
         )
         sys.exit(1)
 
-    indices = random.sample(range(1, len(input_pdf)), k=args.replicas)
+    if args.most_fluctuating:
+        log.info(
+            "Determining the most fluctuating replica of the source PDF set."
+        )
+        indices = find_L1_most_distant(input_pdf)
+    else:
+        indices = random.sample(range(1, len(input_pdf)), k=args.replicas)
 
     if args.output_name is None:
         output_name = args.input_pdf + f"_{args.replicas}"
