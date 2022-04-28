@@ -38,7 +38,7 @@ from reportengine.compat import yaml
 from validphys import lhaindex
 from validphys.lhio import new_pdf_from_indexes
 from validphys.loader import FallbackLoader
-
+from validphys.arclength import arc_lengths
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)
@@ -123,8 +123,26 @@ def find_L1_most_distant(pdf_set):
 
     # get most distant replica for each flavour
     maxs = np.asarray([np.argmax(norms[flav]) for flav in range(8)])
-
     return stats.mode(maxs+1)[0]
+
+
+def find_most_arclenght(pdf_set):
+    """Find the most fluctuating PDF replica of a given pdf_set with the following criterion.
+        Every replica provides PDFs for each flavour.
+        For each replica, calculate its arclenght summing over every flavour.
+        Select the replica that has the bigger arclenght.
+    Parameters
+    -----------
+    pdf_set : string
+        the name of the pdf_set, positional argument of vp-pdffromreplicas
+    ------
+    Returns
+    int
+        index of the most fluctuating (arclenght) replica.
+    """
+    aa = arc_lengths(pdf_set, 1.65, flavours=[-4,-3,-2,-1,21,1,2,3,4])
+    bb = np.sum(aa.stats.data, 1)
+    return np.asarray([np.argmax(bb)+1])
 
 
 def main():
@@ -153,19 +171,25 @@ def main():
         help="Flag to save a CSV with a mapping of new replica indices to old replica indices.",
     )
     parser.add_argument(
-        "--most-fluctuating",
-        "-f",
+        "--maximize-distance",
+        "-d",
         action="store_true",
-        help="Flag to sample the most fluctuating replica of the <input_pdf> set.",
+        help="Flag to sample the most distant replica of the <input_pdf> set with L1-distance",
+    )
+    parser.add_argument(
+        "--maximize-arclenght",
+        "-a",
+        action="store_true",
+        help="Flag to sample the most fluctuating replica of the <input_pdf> set with arclenght criterion",
     )
     args = parser.parse_args()
 
     loader = FallbackLoader()
     input_pdf = loader.check_pdf(args.input_pdf)
 
-    if input_pdf.error_type != "replicas":
+    if input_pdf.ErrorType != "replicas":
         log.error(
-            "Error type of input PDF must be `replicas` not `%s`", input_pdf.error_type
+            "Error type of input PDF must be `replicas` not `%s`", input_pdf.ErrorType
         )
         sys.exit(1)
 
@@ -177,9 +201,14 @@ def main():
         )
         sys.exit(1)
 
-    if args.most_fluctuating:
+    if args.maximize_arclenght:
         log.info(
-            "Determining the most fluctuating replica of the source PDF set."
+            "Determining the arclenght of the replicas in the source PDF set."
+        )
+        indices = find_most_arclenght(input_pdf)
+    elif args.maximize_distance:
+        log.info(
+            "Determining the L1-distance from the central replica for the entire PDF set."
         )
         indices = find_L1_most_distant(input_pdf)
     else:
