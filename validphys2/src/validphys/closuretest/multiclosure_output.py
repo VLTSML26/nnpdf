@@ -11,10 +11,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy.special as special
 import scipy.stats
+import logging
 
 from reportengine.figure import figure, figuregen
 from reportengine.table import table
+from reportengine import colors
 
+log = logging.getLogger()
+#log.setLevel(logging.INFO)
+#log.addHandler(colors.ColorHandler())
 
 @figure
 def plot_dataset_fits_bias_variance(fits_dataset_bias_variance, dataset):
@@ -94,6 +99,19 @@ def datasets_bias_variance_ratio(datasets_expected_bias_variance, each_dataset):
     df.columns = ["ndata", "bias/variance"]
     return df
 
+def expected_xi_1sigma_output_total(expected_xi_from_bias_variance, fits):
+    #import ipdb; ipdb.set_trace()
+    xi_1sigma = expected_xi_from_bias_variance.iat[-1,-1]
+    with open("expected_xi_1sigma_behavior.dat", "a") as f:
+        log.warning("Writing on expected_xi_1sigma_behavior.dat.")
+        f.write(
+                str(len(fits)) +
+                "\t" +
+                str(xi_1sigma) +
+                "\n"
+                )
+    return
+
 
 @table
 def experiments_bias_variance_ratio(
@@ -111,7 +129,7 @@ def experiments_bias_variance_ratio(
     df_in = datasets_bias_variance_ratio(
         experiments_expected_bias_variance, experiments_data
     )
-
+    #import ipdb; ipdb.set_trace()
     bias_tot, var_tot, ntotal = expected_total_bias_variance
 
     tot_df = pd.DataFrame(
@@ -629,6 +647,24 @@ def total_std_xi_means_finite_effects(
     )
 
 
+def experiments_bootstrap_sqrt_ratio_output_total_value(
+    experiments_bootstrap_sqrt_ratio, fits
+):  
+    sqrt_ratio = np.mean(experiments_bootstrap_sqrt_ratio, axis=0)
+    import ipdb; ipdb.set_trace()
+    with open("sqrt_ratio_behavior.dat", "a") as f:
+        log.warning("Writing on sqrt_ratio_behavior.dat.")
+        f.write(
+                str(len(fits)) +
+                "\t" +
+                str(np.mean(sqrt_ratio)) +
+                "\t" +
+                str(np.std(sqrt_ratio)) +
+                "\n"
+                )
+    return      
+
+
 @table
 def experiments_bootstrap_sqrt_ratio_table(
     experiments_bootstrap_sqrt_ratio, experiments_data
@@ -727,6 +763,25 @@ def experiments_bootstrap_xi_table(
         r"Bootstrap std. dev. $\xi_{1\sigma}$",
     ]
     return df
+
+
+def experiments_bootstrap_xi_output_total_value(
+    total_bootstrap_xi, fits
+):
+    xi_1sigma = np.mean(total_bootstrap_xi, axis=1)
+    import ipdb; ipdb.set_trace()
+    with open("xi_behavior.dat", "a") as f:
+        #from validphys.config import CoreConfig
+        log.warning("Writing on xi_behavior.dat.")
+        f.write(
+                str(len(fits)) +
+                "\t" + 
+                str(np.mean(xi_1sigma)) + 
+                "\t" + 
+                str(np.std(xi_1sigma)) + 
+                "\n"
+                )
+    return
 
 
 @table
