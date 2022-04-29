@@ -101,6 +101,10 @@ def plot_pdf_central_diff_histogram(replica_and_central_diff_totalpdf):
     central 1-sigma confidence interval.
 
     """
+    #NOTE
+    """
+    Update: display also the best fit for the histogram and a new plot with the residue
+    """
     sigma, delta = replica_and_central_diff_totalpdf
     scaled_diffs = (delta / sigma).flatten()
     fig, axs = plt.subplots(2, 1, 
@@ -109,16 +113,19 @@ def plot_pdf_central_diff_histogram(replica_and_central_diff_totalpdf):
         gridspec_kw={"height_ratios":[4,1]}
         )
     fig.subplots_adjust(hspace=0)
-
+    #
     ax = axs[0]
-    values, bins, patches = ax.hist(
-        scaled_diffs, bins=50, density=True, label="Central PDF distribution"
-    )
-    bins_center = (bins[1:] + bins[:-1]) / 2
+    ax.set_title("Normalized distribution of difference to input PDF")
     xlim = (-3, 3)
     ax.set_xlim(xlim)
-
     x = np.linspace(*xlim, 100)
+    values, bins, patches = ax.hist(
+        scaled_diffs, 
+        bins=50, 
+        density=True, 
+        label="Central PDF distribution",
+    )
+    bins_center = (bins[1:] + bins[:-1]) / 2
     ax.plot(
         x,
         scipy.stats.norm.pdf(x),
@@ -126,7 +133,6 @@ def plot_pdf_central_diff_histogram(replica_and_central_diff_totalpdf):
         linestyle="--",
         label="Reference: $\mu=$%.2f $\sigma=$%.2f" % (0, 1),
     )
-
     (mu, sigma) = scipy.stats.norm.fit(scaled_diffs)
     ax.plot(
         x,
@@ -135,14 +141,11 @@ def plot_pdf_central_diff_histogram(replica_and_central_diff_totalpdf):
         label=r"Fit: $\mu=$%.2f $\sigma=$%.2f" % (mu, sigma),
     )
     ax.legend()
-    ax.set_title("Normalized distribution of difference to input PDF")
-
-    #import ipdb; ipdb.set_trace()
+    #
     ax = axs[1]
     ax.axhline(0, 0, 1)
     ax.bar(
         x=bins_center,
-        #scipy.stats.norm.pdf(x, mu, sigma) - scipy.stats.norm.pdf(x),
         height=values - scipy.stats.norm.pdf(bins_center, mu, sigma), #TODO normalize?
         width=0.05,
         color='k',
