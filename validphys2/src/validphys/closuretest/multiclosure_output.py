@@ -100,7 +100,6 @@ def datasets_bias_variance_ratio(datasets_expected_bias_variance, each_dataset):
     return df
 
 def expected_xi_1sigma_output_total(expected_xi_from_bias_variance, fits):
-    #import ipdb; ipdb.set_trace()
     xi_1sigma = expected_xi_from_bias_variance.iat[-1,-1]
     with open("expected_xi_1sigma_behavior.dat", "a") as f:
         log.warning("Writing on expected_xi_1sigma_behavior.dat.")
@@ -129,7 +128,6 @@ def experiments_bias_variance_ratio(
     df_in = datasets_bias_variance_ratio(
         experiments_expected_bias_variance, experiments_data
     )
-    #import ipdb; ipdb.set_trace()
     bias_tot, var_tot, ntotal = expected_total_bias_variance
 
     tot_df = pd.DataFrame(
@@ -651,7 +649,6 @@ def experiments_bootstrap_sqrt_ratio_output_total_value(
     experiments_bootstrap_sqrt_ratio, fits
 ):  
     sqrt_ratio = np.mean(experiments_bootstrap_sqrt_ratio, axis=0)
-    import ipdb; ipdb.set_trace()
     with open("sqrt_ratio_behavior.dat", "a") as f:
         log.warning("Writing on sqrt_ratio_behavior.dat.")
         f.write(
@@ -769,9 +766,7 @@ def experiments_bootstrap_xi_output_total_value(
     total_bootstrap_xi, fits
 ):
     xi_1sigma = np.mean(total_bootstrap_xi, axis=1)
-    import ipdb; ipdb.set_trace()
     with open("xi_behavior.dat", "a") as f:
-        #from validphys.config import CoreConfig
         log.warning("Writing on xi_behavior.dat.")
         f.write(
                 str(len(fits)) +

@@ -364,7 +364,6 @@ def _bootstrap_multiclosure_fits(
     fit_boot_th = [closure_th[i] for i in fit_boot_index]
     boot_ths = []
     # construct proxy fits theory predictions
-    #import ipdb; ipdb.set_trace()
     for fit_th in fit_boot_th:
         rep_boot_index = rng.choice(n_rep_max, size=n_rep, replace=use_repeats)
         boot_ths.append(BootstrappedTheoryResult(fit_th.error_members[:, rep_boot_index]))
