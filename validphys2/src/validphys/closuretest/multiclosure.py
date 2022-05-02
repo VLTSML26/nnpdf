@@ -212,7 +212,7 @@ def dataset_replica_and_central_diff(
 
     """
     closures_th, law_th, covmat, _ = internal_multiclosure_dataset_loader
-    replicas = np.asarray([th._rawdata for th in closures_th])
+    replicas = np.asarray([th.error_members for th in closures_th])
     centrals = np.mean(replicas, axis=-1)
     underlying = law_th.central_value
 
@@ -321,8 +321,9 @@ class BootstrappedTheoryResult:
     """
 
     def __init__(self, data):
-        self.rawdata = data
+        self.error_members = data
         self.central_value = data.mean(axis=1)
+        self.rawdata = np.concatenate([self.central_value.reshape(-1, 1), data], axis=-1)
 
 
 def _bootstrap_multiclosure_fits(
@@ -363,6 +364,7 @@ def _bootstrap_multiclosure_fits(
     fit_boot_th = [closure_th[i] for i in fit_boot_index]
     boot_ths = []
     # construct proxy fits theory predictions
+    #import ipdb; ipdb.set_trace()
     for fit_th in fit_boot_th:
         rep_boot_index = rng.choice(n_rep_max, size=n_rep, replace=use_repeats)
         boot_ths.append(BootstrappedTheoryResult(fit_th.error_members[:, rep_boot_index]))
