@@ -174,22 +174,29 @@ def main():
         "--maximize-distance",
         "-d",
         action="store_true",
-        help="Flag to sample the most distant replica of the <input_pdf> set with L1-distance",
+        help="Flag to sample the most distant replica of the <input_pdf> set with L1-distance.",
     )
     parser.add_argument(
         "--maximize-arclenght",
         "-a",
         action="store_true",
-        help="Flag to sample the most fluctuating replica of the <input_pdf> set with arclenght criterion",
+        help="Flag to sample the most fluctuating replica of the <input_pdf> set with arclenght criterion.",
+    )
+    parser.add_argument(
+        "--replica-number",
+        "-r",
+        type=int,
+        default=None,
+        help="Choose a particular replica of the <input_pdf> set as fakepdf. Works only if <replicas> is 1.",
     )
     args = parser.parse_args()
 
     loader = FallbackLoader()
     input_pdf = loader.check_pdf(args.input_pdf)
 
-    if input_pdf.ErrorType != "replicas":
+    if input_pdf.error_type != "replicas":
         log.error(
-            "Error type of input PDF must be `replicas` not `%s`", input_pdf.ErrorType
+            "Error type of input PDF must be `replicas` not `%s`", input_pdf.error_type
         )
         sys.exit(1)
 
@@ -211,8 +218,27 @@ def main():
             "Determining the L1-distance from the central replica for the entire PDF set."
         )
         indices = find_L1_most_distant(input_pdf)
-    else:
+    elif args.replica_number is None:
+        log.info(
+            "Sampling a random replica from the PDF set."
+        )
         indices = random.sample(range(1, len(input_pdf)), k=args.replicas)
+    else:
+        log.info(
+            "Sampling the requested replica from the PDF set."
+        )
+        if args.replicas != 1:
+            log.error(
+                "The --replica-number flag can be used to sample only one replica."
+            )
+            sys.exit(1)
+        if args.replica_number > len(input_pdf) - 1:
+            log.error(
+                "The replica requested is not in the PDF set."
+            )
+            sys.exit(1)
+        indices = [args.replica_number]
+
 
     if args.output_name is None:
         output_name = args.input_pdf + f"_{args.replicas}"
