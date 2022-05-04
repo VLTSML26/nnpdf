@@ -293,7 +293,7 @@ fits_level_1_noise = collect(
 
 @check_use_fitcommondata
 @check_fits_areclosures
-@check_fits_same_filterseed
+@check_fits_same_filterseed #NOTE why this?
 @check_fits_underlying_law_match
 def delta_chi2_bootstrap(
     fits_level_1_noise, fits_exps_bootstrap_chi2_central, fits, use_fitcommondata
