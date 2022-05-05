@@ -237,6 +237,12 @@ class CoreConfig(configparser.Config):
         except LoadFailedError as e:
             raise ConfigError(str(e), fit, self.loader.available_fits)
 
+    # NOTE: fits here has already been parsed so everything works fine
+    def produce_nest(self, fits):
+        tmp = [fits[:i+2] for i in range(len(fits)-1)]
+        #return NSList(tmp, nskey="nest")
+        return tmp
+
     def produce_fitreplicas(self, fit):
         """Production rule mapping the ``replica`` key to each Monte Carlo
         fit replica.
