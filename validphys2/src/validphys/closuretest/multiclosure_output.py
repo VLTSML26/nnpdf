@@ -645,6 +645,23 @@ def total_std_xi_means_finite_effects(
     )
 
 
+def nest_experiments_bootstrap_sqrt_ratio_output_total_value(
+    nest_experiments_bootstrap_sqrt_ratio, nest
+):  
+    for (fit, single_exp) in zip(nest, nest_experiments_bootstrap_sqrt_ratio):
+        sqrt_ratio = np.mean(single_exp, axis=0)
+        with open("sqrt_ratio_behavior.dat", "a") as f:
+            log.warning("Writing on sqrt_ratio_behavior.dat.")
+            f.write(
+                    str(len(fit)) +
+                    "\t" +
+                    str(np.mean(sqrt_ratio)) +
+                    "\t" +
+                    str(np.std(sqrt_ratio)) +
+                    "\n"
+                    )
+    return      
+
 def experiments_bootstrap_sqrt_ratio_output_total_value(
     experiments_bootstrap_sqrt_ratio, fits
 ):  
