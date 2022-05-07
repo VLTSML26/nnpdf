@@ -650,8 +650,8 @@ def nest_experiments_bootstrap_sqrt_ratio_output_total_value(
 ):  
     for (fit, single_exp) in zip(nest, nest_experiments_bootstrap_sqrt_ratio):
         sqrt_ratio = np.mean(single_exp, axis=0)
-        with open("sqrt_ratio_behavior.dat", "a") as f:
-            log.warning("Writing on sqrt_ratio_behavior.dat.")
+        with open("nest_sqrt_ratio_behavior.dat", "a") as f:
+            log.warning("Writing on nest_sqrt_ratio_behavior.dat.")
             f.write(
                     str(len(fit)) +
                     "\t" +

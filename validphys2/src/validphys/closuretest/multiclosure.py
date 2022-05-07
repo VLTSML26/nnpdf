@@ -663,7 +663,6 @@ def total_bootstrap_ratio(experiments_bootstrap_bias_variance):
 
     """
     bias_tot, var_tot = np.sum(experiments_bootstrap_bias_variance, axis=0)
-    import ipdb; ipdb.set_trace()
     return bias_tot, var_tot
 
 
@@ -920,7 +919,6 @@ def nest_data_bias_variance(
 
 def nest_expected_data_bias_variance(nest_data_bias_variance):
     """Like `nest_expected_dataset_bias_variance` except for all data"""
-    import ipdb; ipdb.set_trace()
     return nest_expected_dataset_bias_variance(nest_data_bias_variance)
 # -------------------------------------------------------------------------------------------
 
@@ -1354,7 +1352,7 @@ nest_experiments_bootstrap_bias_variance = collect(
 )
 
 
-def nest_total_bootstrap_ratio(nest_experiments_bootstrap_bias_variance):
+def nest_total_bootstrap_ratio(nest_experiments_bootstrap_bias_variance, nest):
     """Calculate the total bootstrap ratio for all data. Leverages the
     fact that the covariance matrix is block diagonal in experiments so
 
@@ -1369,11 +1367,9 @@ def nest_total_bootstrap_ratio(nest_experiments_bootstrap_bias_variance):
 
     """
     tmp = []
-    for aa in nest_experiments_bootstrap_bias_variance[0]:
-        bb = []
-        for i in range(len(aa)):
-            bb += [[aa[i]]]
-        bias_tot, var_tot = np.sum(bb, axis=1)
+    aa = np.asarray(nest_experiments_bootstrap_bias_variance)
+    for i in range(len(nest)):
+        bias_tot, var_tot = np.sum(aa[:,i,:,:], axis=0)
         tmp += [(bias_tot, var_tot)]
     return tmp 
 
@@ -1393,12 +1389,12 @@ def nest_experiments_bootstrap_ratio(nest_experiments_bootstrap_bias_variance, n
 
     """
     tmp = []
-    for (single_tot, single_exp) in zip(nest_total_bootstrap_ratio, nest_experiments_bootstrap_bias_variance):
-        ratios = [bias / var for bias, var in [single_exp[0]]]
+    aa = np.asarray(nest_experiments_bootstrap_bias_variance)
+    for i, single_tot in enumerate(nest_total_bootstrap_ratio):
+        ratios = [bias / var for bias, var in aa[:,i,:,:]]
         bias_tot, var_tot = single_tot
         ratios.append(bias_tot / var_tot)
         tmp += [(ratios)]
-    import ipdb; ipdb.set_trace()
     return tmp
 
 
