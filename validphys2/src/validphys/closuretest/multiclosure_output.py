@@ -682,7 +682,7 @@ def plot_sqrt_ratio_behavior(sqrt_ratio_behavior, fits):
     xs = np.arange(6, len(fits), 0.1)
     #
     ax = axs[0]
-    ax.set_title(r'$\sqrt{R_{bv}}$ indicator'
+    ax.set_title(r'$\sqrt{R_{bv}}$ indicator',
         fontsize=25,
     )
     ax.plot(df['Nfits'], df['SMA5'],
