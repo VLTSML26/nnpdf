@@ -16,6 +16,7 @@ import logging
 from reportengine.figure import figure, figuregen
 from reportengine.table import table
 from reportengine import colors
+from scipy.interpolate import CubicSpline
 
 log = logging.getLogger()
 #log.setLevel(logging.INFO)
@@ -645,22 +646,84 @@ def total_std_xi_means_finite_effects(
     )
 
 
-def nest_experiments_bootstrap_sqrt_ratio_output_total_value(
-    nest_experiments_bootstrap_sqrt_ratio, nest
+# TODO: comment
+def sqrt_ratio_behavior(
+    nest_experiments_bootstrap_sqrt_ratio,
+    nest
 ):  
+    df = pd.DataFrame(columns=['Nfits', 'Measured', 'BootError'])
     for (fit, single_exp) in zip(nest, nest_experiments_bootstrap_sqrt_ratio):
         sqrt_ratio = np.mean(single_exp, axis=0)
-        with open("nest_sqrt_ratio_behavior.dat", "a") as f:
-            log.warning("Writing on nest_sqrt_ratio_behavior.dat.")
-            f.write(
-                    str(len(fit)) +
-                    "\t" +
-                    str(np.mean(sqrt_ratio)) +
-                    "\t" +
-                    str(np.std(sqrt_ratio)) +
-                    "\n"
-                    )
-    return      
+        df = df.append({
+            'Nfits': len(fit),
+            'Measured': np.mean(sqrt_ratio),
+            'BootError': np.std(sqrt_ratio),
+        }, ignore_index=True)
+    df['SMA5'] = df['Measured'].rolling(5).mean()
+    df['10Var'] = df['Measured'].rolling(10).var()
+    df['15Var'] = df['Measured'].rolling(15).var()
+    cs = df['Nfits'].to_frame()
+    cs['SMA5'] = df['SMA5']
+    cs.dropna(inplace=True)
+    return df, cs
+
+
+# TODO: comment and finish styling
+@figure
+def plot_sqrt_ratio_behavior(sqrt_ratio_behavior, fits):
+    df, cs = sqrt_ratio_behavior
+    fig, axs = plt.subplots(3, 1,
+        sharex=True, gridspec_kw={"height_ratios":[4,1,1]},
+        figsize=(15,13),
+    )
+    fig.subplots_adjust(hspace=0.02)
+    #
+    spline = CubicSpline(cs['Nfits'], cs['SMA5'])
+    xs = np.arange(6, len(fits), 0.1)
+    #
+    ax = axs[0]
+    ax.set_title(r'$\sqrt{R_{bv}}$ indicator'
+        fontsize=25,
+    )
+    ax.plot(df['Nfits'], df['SMA5'],
+        label='5 point moving average',
+    )
+    ax.errorbar(df['Nfits'], df['Measured'], df['BootError'],
+        capsize=5,
+        linestyle='',
+        marker='s',
+        color='k',
+        ecolor='tab:gray',
+        label=r'Measured $\sqrt{R_{bv}}$',
+    )
+    ax.axhline(1,
+        linewidth=3,
+        label='Ideal',
+    )
+    ax.grid(linestyle='--')
+    ax.legend(framealpha=1)
+    #
+    ax = axs[1]
+    ax.plot(xs, spline(xs,1),
+        label='First derivative',
+        color='k',
+    )
+    ax.plot(xs, spline(xs,2),
+        label='Second derivative',
+        color='tab:gray',
+        alpha=.8,
+    )
+    ax.grid(linestyle='--')
+    ax.legend(ncol=2, framealpha=1)
+    #
+    ax = axs[2]
+    ax.set_xlabel('Number of fits', loc = 'right')
+    ax.plot(df['Nfits'], df['10Var'], color = 'tab:gray', label='10 point variance')
+    ax.plot(df['Nfits'], df['15Var'], color = 'k', label='15 point variance')
+    ax.grid(linestyle='--')
+    ax.legend(framealpha=1)
+    #
+    return fig
 
 def experiments_bootstrap_sqrt_ratio_output_total_value(
     experiments_bootstrap_sqrt_ratio, fits
