@@ -769,7 +769,6 @@ def total_bootstrap_xi(experiments_bootstrap_xi):
     array
 
     """
-    import ipdb; ipdb.set_trace()
     return np.concatenate(experiments_bootstrap_xi, axis=1)
 
 groups_bootstrap_xi = collect(
@@ -1306,7 +1305,6 @@ def nest_total_bootstrap_xi(nest_experiments_bootstrap_xi, nest):
     #aa = np.asarray(nest_experiments_bootstrap_xi)
     for i in range(len(nest)):
         tmp += [(np.concatenate(nest_experiments_bootstrap_xi, axis=2)[i])]
-    import ipdb; ipdb.set_trace()
     return tmp
 
 groups_bootstrap_xi = collect(
