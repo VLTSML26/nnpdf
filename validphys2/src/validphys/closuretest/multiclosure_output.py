@@ -16,6 +16,7 @@ import logging
 from reportengine.figure import figure, figuregen
 from reportengine.table import table
 from reportengine import colors
+from scipy.interpolate import CubicSpline
 
 log = logging.getLogger()
 #log.setLevel(logging.INFO)
@@ -645,21 +646,102 @@ def total_std_xi_means_finite_effects(
     )
 
 
-def experiments_bootstrap_sqrt_ratio_output_total_value(
-    experiments_bootstrap_sqrt_ratio, fits
+# TODO: check the note below
+def sqrt_ratio_behavior(
+    nest_experiments_bootstrap_sqrt_ratio,
+    nest
 ):  
-    sqrt_ratio = np.mean(experiments_bootstrap_sqrt_ratio, axis=0)
-    with open("sqrt_ratio_behavior.dat", "a") as f:
-        log.warning("Writing on sqrt_ratio_behavior.dat.")
-        f.write(
-                str(len(fits)) +
-                "\t" +
-                str(np.mean(sqrt_ratio)) +
-                "\t" +
-                str(np.std(sqrt_ratio)) +
-                "\n"
-                )
-    return      
+    """
+    Iterating over the members of the nest, returns a pandas.DataFrame with: number of fits, 
+    measured sqrt_ratio, boostrap error, 5-pt moving average, 10 and 15-pt variance.
+    Also returns a dataframe with the moving average dropping the NaNs, in order to perform spline
+    interpolation later.
+    """
+    df = pd.DataFrame(columns=['Nfits', 'Measured', 'BootError'])
+    for (fit, single_exp) in zip(nest, nest_experiments_bootstrap_sqrt_ratio):
+        sqrt_ratio = np.mean(single_exp, axis=0) # NOTE: check if axis=0 is correct here
+        df = df.append({
+            'Nfits': len(fit),
+            'Measured': np.mean(sqrt_ratio),
+            'BootError': np.std(sqrt_ratio),
+        }, ignore_index=True)
+    df['SMA5'] = df['Measured'].rolling(5).mean()
+    df['10Var'] = df['Measured'].rolling(10).var()
+    df['15Var'] = df['Measured'].rolling(15).var()
+    cs = df['Nfits'].to_frame()
+    cs['SMA5'] = df['SMA5']
+    cs.dropna(inplace=True)
+    return df, cs
+
+
+@figure
+def plot_sqrt_ratio_behavior(
+    sqrt_ratio_behavior,
+    fits
+):
+    """
+    Plot the behavior of the R_bv indicator alongside it bootstrap error when the number of
+    fits varies. Convergence indicators are also shown, as follows:
+    ---------
+    Plot 1: measured R_bv with errorbars, 5-pt moving average and ideal R=1.
+    ---------
+    Plot 2: first and second derivative of data-fitted spline.
+    ---------
+    Plot 3: 10-pt and 15-pt variance of the measured data.
+    """
+    df, cs = sqrt_ratio_behavior
+    fig, axs = plt.subplots(3, 1,
+        sharex=True, gridspec_kw={"height_ratios":[4,1,1]},
+        figsize=(15,13),
+    )
+    fig.subplots_adjust(hspace=0.02)
+    #
+    spline = CubicSpline(cs['Nfits'], cs['SMA5'])
+    xs = np.arange(6, len(fits), 0.1)
+    #
+    ax = axs[0]
+    ax.set_title(r'$\sqrt{R_{bv}}$ indicator',
+        fontsize=25,
+    )
+    ax.plot(df['Nfits'], df['SMA5'],
+        label='5 point moving average',
+    )
+    ax.errorbar(df['Nfits'], df['Measured'], df['BootError'],
+        capsize=5,
+        linestyle='',
+        marker='s',
+        color='k',
+        ecolor='tab:gray',
+        label=r'Measured $\sqrt{R_{bv}}$',
+    )
+    ax.axhline(1,
+        linewidth=3,
+        label='Ideal',
+    )
+    ax.grid(linestyle='--')
+    ax.legend(framealpha=1)
+    #
+    ax = axs[1]
+    ax.plot(xs, spline(xs,1),
+        label='First derivative',
+        color='k',
+    )
+    ax.plot(xs, spline(xs,2),
+        label='Second derivative',
+        color='tab:gray',
+        alpha=.8,
+    )
+    ax.grid(linestyle='--')
+    ax.legend(ncol=2, framealpha=1)
+    #
+    ax = axs[2]
+    ax.set_xlabel('Number of fits', loc = 'right')
+    ax.plot(df['Nfits'], df['10Var'], color = 'tab:gray', label='10 point variance')
+    ax.plot(df['Nfits'], df['15Var'], color = 'k', label='15 point variance')
+    ax.grid(linestyle='--')
+    ax.legend(framealpha=1)
+    #
+    return fig
 
 
 @table
@@ -778,6 +860,22 @@ def experiments_bootstrap_xi_output_total_value(
                 )
     return
 
+def nest_experiments_bootstrap_xi_output_total_value(
+    nest_total_bootstrap_xi, nest
+):
+    for (fit, single_exp) in zip(nest, nest_total_bootstrap_xi):
+        xi_1sigma = np.mean(single_exp, axis=1)
+        with open("nest_xi_behavior.dat", "a") as f:
+            log.warning("Writing on nest_xi_behavior.dat.")
+            f.write(
+                    str(len(fit)) +
+                    "\t" + 
+                    str(np.mean(xi_1sigma)) + 
+                    "\t" + 
+                    str(np.std(xi_1sigma)) + 
+                    "\n"
+                    )
+    return
 
 @table
 def groups_bootstrap_xi_table(
@@ -924,3 +1022,105 @@ def plot_bias_variance_distributions(
     ax.legend()
     ax.set_title("Total bias and variance distributions.")
     yield fig
+
+
+# TODO: check the note below
+def xi_behavior(
+    nest_total_bootstrap_xi,
+    nest
+):  
+    """
+    Iterating over the members of the nest, returns a pandas.DataFrame with: number of fits, 
+    measured xi, boostrap error, 5-pt moving average, 10 and 15-pt variance.
+    Also returns a dataframe with the moving average dropping the NaNs, in order to perform spline
+    interpolation later.
+    """
+    df = pd.DataFrame(columns=['Nfits', 'Measured', 'BootError'])
+    for (fit, single_exp) in zip(nest, nest_total_bootstrap_xi):
+        xi = np.mean(single_exp, axis=1) # NOTE: should the mean be taken along axis 0 or 1? Check
+        df = df.append({
+            'Nfits': len(fit),
+            'Measured': np.mean(xi),
+            'BootError': np.std(xi),
+        }, ignore_index=True)
+    df['SMA5'] = df['Measured'].rolling(5).mean()
+    df['10Var'] = df['Measured'].rolling(10).var()
+    df['15Var'] = df['Measured'].rolling(15).var()
+    cs = df['Nfits'].to_frame()
+    cs['SMA5'] = df['SMA5']
+    cs.dropna(inplace=True)
+    return df, cs
+
+
+@figure
+def plot_xi_behavior(
+    xi_behavior,
+    fits
+):
+    """
+    Plot the behavior of the xi_1sigma indicator alongside it bootstrap error when the number of
+    fits varies. Convergence indicators are also shown, as follows:
+    ---------
+    Plot 1: measured xi with errorbars, 5-pt moving average and ideal xi=0.68.
+    ---------
+    Plot 2: first and second derivative of data-fitted spline.
+    ---------
+    Plot 3: 10-pt and 15-pt variance of the measured data.
+    """
+    df, cs = xi_behavior
+    fig, axs = plt.subplots(3, 1,
+        sharex=True, gridspec_kw={"height_ratios":[4,1,1]},
+        figsize=(15,13),
+    )
+    fig.subplots_adjust(hspace=0.02)
+
+    # spline interpolation
+    # TODO: maybe do it separately in another function?
+    spline = CubicSpline(cs['Nfits'], cs['SMA5'])
+    xs = np.arange(6, len(fits), 0.1)
+
+    # Plot 1:
+    ax = axs[0]
+    ax.set_title(r'$\xi_{1\sigma}$ indicator',
+        fontsize=25,
+    )
+    ax.plot(df['Nfits'], df['SMA5'],
+        label='5 point moving average',
+    )
+    ax.errorbar(df['Nfits'], df['Measured'], df['BootError'],
+        capsize=5,
+        linestyle='',
+        marker='s',
+        color='k',
+        ecolor='tab:gray',
+        label=r'Measured $\xi{1\sigma}$',
+    )
+    ax.axhline(0.68,
+        linewidth=3,
+        label='Ideal',
+    )
+    ax.grid(linestyle='--')
+    ax.legend(framealpha=1)
+
+    # Plot 2:
+    ax = axs[1]
+    ax.plot(xs, spline(xs,1),
+        label='First derivative',
+        color='k',
+    )
+    ax.plot(xs, spline(xs,2),
+        label='Second derivative',
+        color='tab:gray',
+        alpha=.8,
+    )
+    ax.grid(linestyle='--')
+    ax.legend(ncol=2, framealpha=1)
+
+    # Plot 3:
+    ax = axs[2]
+    ax.set_xlabel('Number of fits', loc = 'right')
+    ax.plot(df['Nfits'], df['10Var'], color = 'tab:gray', label='10 point variance')
+    ax.plot(df['Nfits'], df['15Var'], color = 'k', label='15 point variance')
+    ax.grid(linestyle='--')
+    ax.legend(framealpha=1)
+    return fig
