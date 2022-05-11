@@ -186,6 +186,23 @@ def summarise_fits(collected_fit_summaries):
     all the fields used in fit_summary """
     return pd.concat(collected_fit_summaries, axis=1)
 
+@table
+def transposed_summarise_fits(collected_fit_summaries):
+    """
+    Like summarise_fits, but transposed. Useful when the number of fits is greater than the
+    number of statistical indicators displayed (e.g. in a multiclosure analysis).
+    """
+    return pd.concat(collected_fit_summaries, axis=1).transpose()
+
+@table
+def multiclosure_summary(collected_fit_summaries):
+    """
+    Like transposed_summarise_fits but with less infos (dropped TL and central chi2)
+    """
+    tmp_df = pd.concat(collected_fit_summaries, axis=1).transpose()
+    import ipdb; ipdb.set_trace()
+    tmp_df_without_TL = tmp_df.drop(r'$<TL>$', axis=1)
+    return tmp_df_without_TL.drop(r'$\chi^2$', axis=1)
 
 def fit_sum_rules(fit, replica_paths):
     """Return a SumRulesGrid object with the sumrules for each replica as
