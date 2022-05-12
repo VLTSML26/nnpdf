@@ -293,7 +293,7 @@ fits_level_1_noise = collect(
 
 @check_use_fitcommondata
 @check_fits_areclosures
-@check_fits_same_filterseed #NOTE why this?
+#@check_fits_same_filterseed #NOTE why this?
 @check_fits_underlying_law_match
 def delta_chi2_bootstrap(
     fits_level_1_noise, fits_exps_bootstrap_chi2_central, fits, use_fitcommondata
@@ -309,6 +309,7 @@ def delta_chi2_bootstrap(
 
     Exact details on delta chi2 can be found in 1410.8849 eq (28).
     """
+    import ipdb; ipdb.set_trace()
     closure_total_chi2_boot = np.sum(fits_exps_bootstrap_chi2_central, axis=1)
     t0_pseudodata_chi2 = np.array([chi2.central_result for chi2 in fits_level_1_noise])
     deltachi2boot = (

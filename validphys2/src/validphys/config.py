@@ -454,6 +454,10 @@ class CoreConfig(configparser.Config):
         directory."""
         return do_use
 
+    def parse_use_sameseed(self, do_use: bool):
+        """In multiclosure analyses this can be false."""
+        return do_use
+
     def produce_commondata(self, *, dataset_input, use_fitcommondata=False, fit=None):
         """Produce a CommondataSpec from a dataset input"""
 

@@ -34,10 +34,11 @@ def plot_delta_chi2(delta_chi2_bootstrap, fits):
     on delta chi2 see `delta_chi2_bootstrap`
     Update: display the best gaussian fit for the histogram
     """
-    #TODO: in multiclosure fits, filterseeds are different but it could be useful to print
-    #the mean value of the distribution for each fit in a table as a closure indicator.
-    #TODO: when >1 histograms are displayed, their fits are all black and the legend is
-    #misleading. Find a cute way to solve the problem.
+    # TODO: in multiclosure fits, filterseeds are different but it could be useful to print
+    # the mean value of the distribution for each fit in a table as a closure indicator.
+    # TODO: when >1 histograms are displayed, their fits are all black and the legend is
+    # misleading. Find a cute way to solve the problem.
+    import ipdb; ipdb.set_trace()
     delta_chi2 = delta_chi2_bootstrap.T
     labels = [fit.label for fit in fits]
     fig, ax = plt.subplots()

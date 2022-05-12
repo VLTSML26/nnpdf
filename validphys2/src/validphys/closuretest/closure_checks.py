@@ -56,13 +56,16 @@ def check_fits_underlying_law_match(fits):
 
 
 @make_argcheck
-def check_fits_same_filterseed(fits):
-    """Input fits should have the same filter seed if they are being compared"""
-    seeds = {fit.as_input()["closuretest"]["filterseed"] for fit in fits}
-    if len(seeds) != 1:
-        raise CheckError(
-            f"Closure test fits were fitting pseudo data generated with different level 1 noise: {seeds}"
-        )
+def check_fits_same_filterseed(fits, use_sameseed):
+    """Input fits should have the same filter seed if they are being compared.
+    In multiclosure analysis input fits must have different seed: when same_filterseed is false
+    this check does not apply."""
+    if use_sameseed:
+        seeds = {fit.as_input()["closuretest"]["filterseed"] for fit in fits}
+        if len(seeds) != 1:
+            raise CheckError(
+                f"Closure test fits were fitting pseudo data generated with different level 1 noise: {seeds}"
+            )
 
 
 @make_argcheck
