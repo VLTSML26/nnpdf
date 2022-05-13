@@ -38,33 +38,37 @@ def plot_delta_chi2(delta_chi2_bootstrap, fits):
     # the mean value of the distribution for each fit in a table as a closure indicator.
     # TODO: when >1 histograms are displayed, their fits are all black and the legend is
     # misleading. Find a cute way to solve the problem.
-    import ipdb; ipdb.set_trace()
+    #tmp = []
     delta_chi2 = delta_chi2_bootstrap.T
-    labels = [fit.label for fit in fits]
+    #labels = [fit.label for fit in fits]
     fig, ax = plt.subplots()
-    for i, label in enumerate(labels):
-        values, bins, patches = ax.hist(
-            delta_chi2[:, i], 
-            alpha=0.3, 
-            bins=50,
-            density=True,
-            label=label, 
-        )
-        bins_center = (bins[1:] + bins[:-1]) / 2
-        xlim = (bins[0], bins[-1])
-        x = np.linspace(*xlim, 100)
-        (mu, sigma) = scipy.stats.norm.fit(delta_chi2[:, i])
-        ax.plot(
-            x,
-            scipy.stats.norm.pdf(x, mu, sigma),
-            "k",
-            label=r"Fit: $\mu=$%.4f $\sigma=$%.4f" % (mu, sigma),
-        )
-
+    #for i, label in enumerate(labels):
+    values, bins, patches = ax.hist(
+        #delta_chi2[:, i], 
+        delta_chi2,
+        alpha=0.3, 
+        bins=50,
+        density=True,
+        #label=fit.label, 
+    )
+    bins_center = (bins[1:] + bins[:-1]) / 2
+    xlim = (bins[0], bins[-1])
+    x = np.linspace(*xlim, 100)
+    #(mu, sigma) = scipy.stats.norm.fit(delta_chi2[:, i])
+    (mu, sigma) = scipy.stats.norm.fit(delta_chi2)
+    ax.plot(
+        x,
+        scipy.stats.norm.pdf(x, mu, sigma),
+        "k",
+        label=r"Gaussian fit: $\mu=$%.4f $\sigma=$%.4f" % (mu, sigma),
+    )
     plt.xlabel(r"$\Delta_{\chi^{2}}$")
     l = ax.legend()
     l.set_zorder(1000)
-    ax.set_title(r"Total $\Delta_{\chi^{2}}$ for each fit")
+    #ax.set_title(r"Total $\Delta_{\chi^{2}}$ for each fit")
+    #tmp += [(fit, fig)]
+    #import ipdb; ipdb.set_trace()
+    #pd.DataFrame(tmp)
     return fig
 
 
