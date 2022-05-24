@@ -313,7 +313,6 @@ def delta_chi2_bootstrap(
     """
     # len(fits_level_1_noise) = N_fits
     # len(fits_exps_bootstrap_chi2_central) = N_fits
-    #import ipdb; ipdb.set_trace()
     closure_total_chi2_boot = np.sum(fits_exps_bootstrap_chi2_central, axis=1)
     # closure_total_chi2_boot.shape = (N_fits, 500)
     t0_pseudodata_chi2 = np.array([chi2.central_result for chi2 in fits_level_1_noise])

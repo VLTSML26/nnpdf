@@ -67,7 +67,6 @@ def plot_delta_chi2(delta_chi2_bootstrap, fits):
     l.set_zorder(1000)
     #ax.set_title(r"Total $\Delta_{\chi^{2}}$ for each fit")
     #tmp += [(fit, fig)]
-    #import ipdb; ipdb.set_trace()
     #pd.DataFrame(tmp)
     return fig
 

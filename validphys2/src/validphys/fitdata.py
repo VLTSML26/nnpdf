@@ -200,7 +200,6 @@ def multiclosure_summary(collected_fit_summaries):
     Like transposed_summarise_fits but with less infos (dropped TL and central chi2)
     """
     tmp_df = pd.concat(collected_fit_summaries, axis=1).transpose()
-    import ipdb; ipdb.set_trace()
     tmp_df_without_TL = tmp_df.drop(r'$<TL>$', axis=1)
     return tmp_df_without_TL.drop(r'$\chi^2$', axis=1)
 
