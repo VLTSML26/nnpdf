@@ -186,8 +186,25 @@ def fits_total_bias_variance(fits_experiments_bias_variance):
     return bias_total, variance_total, n_total
 
 
+"""
+Please NOTE what follows.
+The collection rule of datasets_expected_bias_variance seems bugged (and so the nested one as well).
+Indeed, it is not called in any Validphys report since it is only called in function datasets_bias_variance_ratio
+but actually this function is only called in experiments_bias_variance_ratio in the following way
+> datasets_bias_variance_ratio(experiments_expected_bias_variance, experiments_data,)
+so that instead of datasets_expected_bias_variance, experiments_expected_bias_variance is passed to the function.
+I guess that who wrote this changed his mind and used experiments_expected_bias_variance insted.
+He must have forgotten to delete this, or maybe he never used it and thought it wasn't bugged.
+"""
+
+# TODO: debug this
 datasets_expected_bias_variance = collect(
     "expected_dataset_bias_variance", ("data",)
+)
+
+# TODO: debug this
+nest_datasets_expected_bias_variance = collect(
+    "nest_expected_dataset_bias_variance", ("data",)
 )
 
 
@@ -199,6 +216,46 @@ experiments_expected_bias_variance = collect(
 def expected_total_bias_variance(fits_total_bias_variance):
     """Like `expected_dataset_bias_variance` except for all data"""
     return expected_dataset_bias_variance(fits_total_bias_variance)
+
+
+nest_experiments_expected_bias_variance = collect(
+    "nest_expected_data_bias_variance", ("group_dataset_inputs_by_experiment",)
+)
+
+
+nest_experiments_bias_variance = collect(
+    "nest_data_bias_variance", ("group_dataset_inputs_by_experiment",)
+)
+
+
+def nest_total_bias_variance(nest_experiments_bias_variance,):
+    """Like `nest_dataset_bias_variance` except for all data, assumes there are
+    no inter-experiment correlations. That assumption is broken if a theory
+    covariance matrix is used.
+
+    """
+    tmp = []
+    for single_bv in [*zip(*nest_experiments_bias_variance)]:
+        bias_total, variance_total, n_total = np.sum(single_bv, axis=0)
+        tmp += [(bias_total, variance_total, n_total)]
+    return tmp
+
+
+def nest_expected_total_bias_variance(nest_total_bias_variance):
+    """Like `expected_dataset_bias_variance` except for all data"""
+    return nest_expected_dataset_bias_variance(nest_total_bias_variance)
+
+
+def nest_expected_total_xi_from_bias_variance(nest_expected_total_bias_variance):
+    tmp = []
+    for single_bv in nest_expected_total_bias_variance:
+        bias, variance, _ = single_bv
+        ratio = bias / variance
+        sqrt_ratio = np.sqrt(ratio)
+        n_sigma_in_variance = 1 / sqrt_ratio
+        estimated_integral = special.erf(n_sigma_in_variance / np.sqrt(2))
+        tmp += [estimated_integral]
+    return tmp
 
 
 def dataset_replica_and_central_diff(
@@ -1002,137 +1059,6 @@ def nest_data_xi(nest_data_replica_and_central_diff):
     return nest_dataset_xi(nest_data_replica_and_central_diff)
 
 
-experiments_xi_measured = collect("data_xi", ("group_dataset_inputs_by_experiment",))
-experiments_replica_central_diff = collect(
-    "data_replica_and_central_diff", ("group_dataset_inputs_by_experiment",))
-
-
-class BootstrappedTheoryResult:
-    """Proxy class which mimics results.ThPredictionsResult so that
-    pre-existing bias/variance actions can be used with bootstrapped replicas
-    """
-
-    def __init__(self, data):
-        self.error_members = data
-        self.central_value = data.mean(axis=1)
-        self.rawdata = np.concatenate([self.central_value.reshape(-1, 1), data], axis=-1)
-
-
-def xi_resampling_dataset(
-    internal_multiclosure_dataset_loader,
-    n_fit_samples,
-    n_replica_samples,
-    bootstrap_samples=100,
-    boot_seed=DEFAULT_SEED,
-    use_repeats=True,
-):
-    """For a single dataset, create bootstrap distributions of xi_1sigma
-    varying the number of fits and replicas drawn for each resample. Return a
-    4-D array with dimensions
-
-        (number of n_rep samples, number of n_fit samples, n_boot, n_data)
-
-    filled with resampled bias and variance respectively. The number of bootstrap_samples
-    is 100 by default. The number of n_rep samples is determined by varying
-    n_rep between 10 and the number of replicas each fit has in intervals of 5.
-    This action requires that each fit has the same number of replicas which also
-    must be at least 10. The number of n_fit samples is determined analogously to
-    the number of n_rep samples, also requiring at least 10 fits.
-
-    Returns
-    -------
-    resamples: array
-        4-D array with resampled xi for each n_rep samples and each n_fit samples
-
-    Notes
-    -----
-    The bootstrap samples are seeded in this function. If this action is collected
-    over multiple datasets then the set of resamples all used corresponding replicas.
-
-    """
-    # seed same rng so we can aggregate results
-    rng = np.random.RandomState(seed=boot_seed)
-
-    xi_1sigma = []
-    for n_rep_sample in n_replica_samples:
-        # results varying n_fit_sample
-        fixed_n_rep_xi_1sigma = []
-        for n_fit_sample in n_fit_samples:
-            # for each n_fit and n_replica sample store result of each boot resample
-            xi_1sigma_boot = []
-            for _ in range(bootstrap_samples):
-                boot_internal_loader = _bootstrap_multiclosure_fits(
-                    internal_multiclosure_dataset_loader,
-                    rng,
-                    n_fit_samples[-1],
-                    n_fit_sample,
-                    n_replica_samples[-1],
-                    n_rep_sample,
-                    use_repeats,
-                )
-                # append the 1d array for individual eigenvectors
-                xi_1sigma_boot.append(
-                    dataset_xi(dataset_replica_and_central_diff(boot_internal_loader))
-                )
-            fixed_n_rep_xi_1sigma.append(xi_1sigma_boot)
-        xi_1sigma.append(fixed_n_rep_xi_1sigma)
-    return np.array(xi_1sigma)
-
-
-def xi_resampling_data(
-    internal_multiclosure_data_loader,
-    n_fit_samples,
-    n_replica_samples,
-    bootstrap_samples=100,
-    boot_seed=DEFAULT_SEED,
-    use_repeats=True,
-):
-    """Like xi_resampling_dataset except for all data.
-
-    Notes
-    -----
-    The bootstrap samples are seeded in this function. If this action is collected
-    over multiple experiments then the set of resamples all used corresponding replicas
-    and can be added together.
-
-    """
-    return xi_resampling_dataset(
-        internal_multiclosure_data_loader,
-        n_fit_samples,
-        n_replica_samples,
-        bootstrap_samples,
-        boot_seed=boot_seed,
-        use_repeats=use_repeats,
-    )
-
-
-exps_xi_resample = collect("xi_resampling_data", ("group_dataset_inputs_by_experiment",))
-
-
-def total_xi_resample(exps_xi_resample):
-    """Concatenate the xi for each datapoint for all data"""
-    return np.concatenate(exps_xi_resample, axis=-1)
-
-
-def total_expected_xi_resample(bias_variance_resampling_total):
-    """Using the bias and variance resample, return a resample of expected xi
-    using the method outlined in
-    :py:func:`validphys.closuretest.multiclosure_output.expected_xi_from_bias_variance`.
-
-    The general concept is based on assuming all of the distributions are
-    gaussians and using the ratio of bias/variance to predict the corresponding
-    integral. To see a more in depth explanation, see
-    :py:func:`validphys.closuretest.multiclosure_output.expected_xi_from_bias_variance`.
-
-    """
-    bias_total, var_total = bias_variance_resampling_total
-    sqrt_bias_var = np.sqrt(bias_total / var_total)
-    n_sigma_in_variance = 1 / sqrt_bias_var
-    # pylint can't find erf here, disable error in this function
-    # pylint: disable=no-member
-    return special.erf(n_sigma_in_variance / np.sqrt(2))
-
-
 @check_multifit_replicas
 def nest_bootstrap_data_bias_variance(
     nest_internal_multiclosure_data_loader,
@@ -1260,38 +1186,6 @@ def nest_experiments_bootstrap_sqrt_ratio(nest_experiments_bootstrap_ratio):
     return np.sqrt(nest_experiments_bootstrap_ratio)
 
 
-def experiments_bootstrap_expected_xi(experiments_bootstrap_sqrt_ratio):
-    """Calculate a bootstrap resampling of the expected xi from
-    ``experiments_bootstrap_sqrt_ratio``, using the same formula as
-    :py:func:`validphys.closuretest.multiclosure_output.expected_xi_from_bias_variance`.
-
-    """
-    n_sigma_in_variance = 1 / experiments_bootstrap_sqrt_ratio
-    # pylint can't find erf here, disable error in this function
-    # pylint: disable=no-member
-    estimated_integral = special.erf(n_sigma_in_variance / np.sqrt(2))
-    return estimated_integral
-
-groups_bootstrap_bias_variance = collect(
-    "fits_bootstrap_data_bias_variance", ("group_dataset_inputs_by_metadata",)
-)
-
-
-def groups_bootstrap_ratio(groups_bootstrap_bias_variance, total_bootstrap_ratio):
-    """Like :py:func:`experiments_bootstrap_ratio` but for metadata groups."""
-    return experiments_bootstrap_ratio(groups_bootstrap_bias_variance, total_bootstrap_ratio)
-
-
-def groups_bootstrap_sqrt_ratio(groups_bootstrap_ratio):
-    """Like :py:func:`experiments_bootstrap_sqrt_ratio` but for metadata groups."""
-    return experiments_bootstrap_sqrt_ratio(groups_bootstrap_ratio)
-
-
-def groups_bootstrap_expected_xi(groups_bootstrap_sqrt_ratio):
-    """Like :py:func:`experiments_bootstrap_expected_xi` but for metadata groups."""
-    return experiments_bootstrap_expected_xi(groups_bootstrap_sqrt_ratio)
-
-
 nest_experiments_bootstrap_xi = collect(
     "nest_bootstrap_data_xi", ("group_dataset_inputs_by_experiment",))
 
@@ -1306,65 +1200,3 @@ def nest_total_bootstrap_xi(nest_experiments_bootstrap_xi, nest):
     for i in range(len(nest)):
         tmp += [(np.concatenate(nest_experiments_bootstrap_xi, axis=2)[i])]
     return tmp
-
-groups_bootstrap_xi = collect(
-    "fits_bootstrap_data_xi", ("group_dataset_inputs_by_metadata",))
-
-
-def dataset_fits_bias_replicas_variance_samples(
-    internal_multiclosure_dataset_loader,
-    _internal_max_reps=None,
-    _internal_min_reps=20,
-):
-    """For a single dataset, calculate the samples of chi2-quantities which
-    are used to calculate the bias and variance for each fit. The output of this
-    function is similar to :py:func:`fits_dataset_bias_variance` except that
-    the mean is not taken across replicas when calculating the mean squared
-    difference between replica predictions and central predictions and instead
-    the results are concatenated. The mean of this array would be the expected
-    value of the variance across fits.
-
-    Return tuple (fits_bias, fits_replica_variance, n_data), where fits_bias is
-    1-D array of length N_fits and fits_replica_variance is 1-D array length
-    N_fits * N_replicas.
-
-    For more information on bias see closuretest.bias_dataset and for more information
-    on variance see :py:func:`validphys.closuretest.closure_results.variance_dataset`.
-
-    The fits should each have the same underlying law and t0 PDF, but have
-    different filterseeds, so that the level 1 shift is different.
-
-    Can control the number of replicas taken from each fit with
-    ``_internal_max_reps``.
-
-    """
-    closures_th, law_th, _, sqrtcov = internal_multiclosure_dataset_loader
-    # The dimentions here are (fit, data point, replica)
-    reps = np.asarray([th.error_members[:, :_internal_max_reps] for th in closures_th])
-    # take mean across replicas - since we might have changed no. of reps
-    centrals = reps.mean(axis=2)
-    # place bins on first axis
-    diffs = law_th.central_value[:, np.newaxis] - centrals.T
-    biases = calc_chi2(sqrtcov, diffs)
-    variances = []
-    # this seems slow but breaks for datasets with single data point otherwise
-    for i in range(reps.shape[0]):
-        diffs = reps[i, :, :] - reps[i, :, :].mean(axis=1, keepdims=True)
-        variances.append(calc_chi2(sqrtcov, diffs))
-    return biases, np.concatenate(variances), len(law_th)
-
-def dataset_inputs_fits_bias_replicas_variance_samples(
-    internal_multiclosure_data_loader,
-    _internal_max_reps=None,
-    _internal_min_reps=20,
-):
-    return dataset_fits_bias_replicas_variance_samples(
-        internal_multiclosure_data_loader,
-        _internal_max_reps=None,
-        _internal_min_reps=20,
-    )
-
-experiments_fits_bias_replicas_variance_samples = collect(
-    "dataset_inputs_fits_bias_replicas_variance_samples",
-    ("group_dataset_inputs_by_experiment",)
-)

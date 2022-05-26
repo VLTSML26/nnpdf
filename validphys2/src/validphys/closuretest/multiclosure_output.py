@@ -100,6 +100,7 @@ def datasets_bias_variance_ratio(datasets_expected_bias_variance, each_dataset):
     df.columns = ["ndata", "bias/variance"]
     return df
 
+
 def expected_xi_1sigma_output_total(expected_xi_from_bias_variance, fits):
     xi_1sigma = expected_xi_from_bias_variance.iat[-1,-1]
     with open("expected_xi_1sigma_behavior.dat", "a") as f:
@@ -704,6 +705,7 @@ def plot_sqrt_ratio_behavior(
         fontsize=25,
     )
     ax.plot(df['Nfits'], df['SMA5'],
+        linewidth=3,
         label='5 point moving average',
     )
     ax.errorbar(df['Nfits'], df['Measured'], df['BootError'],
@@ -711,11 +713,13 @@ def plot_sqrt_ratio_behavior(
         linestyle='',
         marker='s',
         color='k',
-        ecolor='tab:gray',
+        ecolor='0.5',
         label=r'Measured $\sqrt{R_{bv}}$',
     )
     ax.axhline(1,
         linewidth=3,
+        linestyle='dashed',
+        color='tab:red',
         label='Ideal',
     )
     ax.grid(linestyle='--')
@@ -820,6 +824,7 @@ def groups_bootstrap_expected_xi_table(groups_bootstrap_expected_xi, groups_data
     idx = df.index.rename("group")
     return df.set_index(idx)
 
+
 @table
 def experiments_bootstrap_xi_table(
     experiments_bootstrap_xi, experiments_data, total_bootstrap_xi
@@ -860,6 +865,7 @@ def experiments_bootstrap_xi_output_total_value(
                 )
     return
 
+
 def nest_experiments_bootstrap_xi_output_total_value(
     nest_total_bootstrap_xi, nest
 ):
@@ -876,6 +882,7 @@ def nest_experiments_bootstrap_xi_output_total_value(
                     "\n"
                     )
     return
+
 
 @table
 def groups_bootstrap_xi_table(
@@ -976,6 +983,7 @@ def plot_experiments_xi_bootstrap_distribution(
         ax.set_xlabel(r"$\xi_{1\sigma}$")
         yield fig
 
+
 @figuregen
 def plot_bias_variance_distributions(
     experiments_fits_bias_replicas_variance_samples,
@@ -1027,20 +1035,22 @@ def plot_bias_variance_distributions(
 # TODO: check the note below
 def xi_behavior(
     nest_total_bootstrap_xi,
+    nest_expected_total_xi_from_bias_variance,
     nest
 ):  
     """
     Iterating over the members of the nest, returns a pandas.DataFrame with: number of fits, 
-    measured xi, boostrap error, 5-pt moving average, 10 and 15-pt variance.
+    measured xi, expected xi (from bias-variance ratio), boostrap error, 5-pt moving average, 10 and 15-pt variance.
     Also returns a dataframe with the moving average dropping the NaNs, in order to perform spline
     interpolation later.
     """
-    df = pd.DataFrame(columns=['Nfits', 'Measured', 'BootError'])
-    for (fit, single_exp) in zip(nest, nest_total_bootstrap_xi):
+    df = pd.DataFrame(columns=['Nfits', 'Measured', 'Expected', 'BootError'])
+    for (fit, single_exp, expected) in zip(nest, nest_total_bootstrap_xi, nest_expected_total_xi_from_bias_variance):
         xi = np.mean(single_exp, axis=1) # NOTE: should the mean be taken along axis 0 or 1? Check
         df = df.append({
             'Nfits': len(fit),
             'Measured': np.mean(xi),
+            'Expected': expected,
             'BootError': np.std(xi),
         }, ignore_index=True)
     df['SMA5'] = df['Measured'].rolling(5).mean()
@@ -1061,7 +1071,7 @@ def plot_xi_behavior(
     Plot the behavior of the xi_1sigma indicator alongside it bootstrap error when the number of
     fits varies. Convergence indicators are also shown, as follows:
     ---------
-    Plot 1: measured xi with errorbars, 5-pt moving average and ideal xi=0.68.
+    Plot 1: measured xi with errorbars, expected xi, 5-pt moving average and ideal xi=0.68.
     ---------
     Plot 2: first and second derivative of data-fitted spline.
     ---------
@@ -1085,18 +1095,25 @@ def plot_xi_behavior(
         fontsize=25,
     )
     ax.plot(df['Nfits'], df['SMA5'],
+        linewidth=3,
         label='5 point moving average',
+    )
+    ax.plot(df['Nfits'], df['Expected'],
+        color='tab:green',
+        label=r'Expected $\xi{1\sigma}$',
     )
     ax.errorbar(df['Nfits'], df['Measured'], df['BootError'],
         capsize=5,
         linestyle='',
         marker='s',
         color='k',
-        ecolor='tab:gray',
+        ecolor='0.5',
         label=r'Measured $\xi{1\sigma}$',
     )
     ax.axhline(0.68,
         linewidth=3,
+        linestyle='dashed',
+        color='tab:red',
         label='Ideal',
     )
     ax.grid(linestyle='--')
