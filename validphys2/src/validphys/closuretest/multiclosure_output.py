@@ -414,22 +414,53 @@ def plot_data_central_diff_histogram(experiments_replica_central_diff):
         for sigma, central_diff
         in experiments_replica_central_diff
     ])
-    fig, ax = plt.subplots()
-    ax.hist(
-        scaled_diffs, bins=50, density=True, label="Central prediction distribution"
-    )
+    fig, axs = plt.subplots(2, 1,
+        sharex=True,
+        figsize=(7,6),
+        gridspec_kw={"height_ratios":[4,1]}
+        )
+    fig.subplots_adjust(hspace=0)
+    #
+    ax = axs[0]
+    ax.set_title("Normalized distribution of difference to central data predictions")
     xlim = (-5, 5)
     ax.set_xlim(xlim)
-
     x = np.linspace(*xlim, 100)
+    values, bins, patches = ax.hist(
+        scaled_diffs, 
+        bins=50, 
+        density=True, 
+        label="Central prediction distribution"
+    )
+    bins_center = (bins[1:] + bins[:-1]) / 2
     ax.plot(
         x,
         scipy.stats.norm.pdf(x),
-        "-k",
-        label="Normal distribution",
+        "k",
+        linestyle="--",
+        label="Reference: $\mu=$%.2f $\sigma=$%.2f" % (0, 1),
+    )
+    (mu, sigma) = scipy.stats.norm.fit(scaled_diffs)
+    ax.plot(
+        x,
+        scipy.stats.norm.pdf(x, mu, sigma),
+        "k",
+        label=r"Fit: $\mu=$%.2f $\sigma=$%.2f" % (mu, sigma),
     )
     ax.legend()
+    #
+    ax = axs[1]
+    ax.axhline(0, 0, 1)
+    ax.bar(
+        x=bins_center,
+        height=values - scipy.stats.norm.pdf(bins_center, mu, sigma), #TODO normalize?
+        width=0.05,
+        color='k',
+        alpha=.6,
+        label="Residual",
+    )
     ax.set_xlabel("Difference to underlying prediction")
+    ax.legend()
     return fig
 
 
