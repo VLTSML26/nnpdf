@@ -678,6 +678,27 @@ def total_std_xi_means_finite_effects(
     )
 
 
+def bias_variance_and_distance_from_center(
+    experiments_bootstrap_sqrt_ratio, pdfs_distance_table, pdf
+):  
+    df = pdfs_distance_table
+    sqrt_ratio = np.mean(experiments_bootstrap_sqrt_ratio, axis=0)
+    import ipdb; ipdb.set_trace()
+    with open("biasvariance_distance.dat", "a") as f:
+        log.warning("Writing on biasvariance_distance.dat.")
+        f.write(
+                pdf.name +
+                "\t" +
+                str(np.mean(sqrt_ratio)) +
+                "\t" +
+                str(df['sum'][0]) +
+                #"\t" +
+                #str(np.std(sqrt_ratio)) +
+                "\n"
+                )
+    return 
+
+
 # TODO: check the note below
 def sqrt_ratio_behavior(
     nest_experiments_bootstrap_sqrt_ratio,
