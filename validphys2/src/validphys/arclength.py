@@ -17,7 +17,7 @@ from reportengine.table import table
 from reportengine.checks import check_positive, make_argcheck
 
 from validphys.pdfbases import Basis, check_basis
-from validphys.pdfgrids import xgrid, xplotting_grid
+from validphys.pdfgrids import distance_grids, xgrid, xplotting_grid
 from validphys.core import PDF
 from validphys.checks import check_pdf_normalize_to
 
@@ -128,3 +128,76 @@ def integrability_number(
     xfgrid = xplotting_grid(pdf, Q, ixgrid, basis, flavours).grid_values.data
     res = np.sum(np.abs(xfgrid), axis=2)
     return res.squeeze()
+
+
+@table
+def pdfs_arclengths_table(
+    pdfs_arc_lengths: Sequence,
+    Q: numbers.Real,
+    normalize_to: (type(None), int) = None,
+):
+    flavs = [
+        "$" + pdfs_arc_lengths[0].basis.elementlabel(fl) + "$" for fl in pdfs_arc_lengths[0].flavours
+    ]
+    df = pd.DataFrame(columns=flavs)
+    for arclengths in pdfs_arc_lengths:
+        vals = arclengths.stats.central_value()
+        if normalize_to is not None:
+            norm_cv = pdfs_arc_lengths[normalize_to].stats.central_value()
+            vals = np.divide(vals, norm_cv)
+        df.loc[arclengths.pdf.label] = vals
+    df['sum'] = df.sum(axis=1)
+    df.sort_values('sum', ascending=False, inplace=True)
+    return df
+
+
+# NOTE: what follows definitely needs to be moved somwhere else
+@table
+def pdfs_distance_table(
+    distance_grids,
+    pdfs
+):
+    flavs = [
+        "$" + distance_grids[0].basis.elementlabel(fl) + "$" for fl in distance_grids[0].flavours
+    ]
+    df = pd.DataFrame(columns=flavs)
+    for dist, pdf in zip(distance_grids, pdfs):
+        # get the L1 distance discretized on the grid for each flavour
+        vals = dist.grid_values.central_value().sum(axis=1)
+        # normalize with respect of number of points
+        vals /= len(dist.grid_values.central_value()[1])
+        df.loc[pdf] = vals
+    df['sum'] = df.sum(axis=1)
+    df.sort_values('sum', ascending=False, inplace=True)
+    return df
+
+@check_pdf_normalize_to
+@table
+def pdfs_kullback_leibler(
+    pdfs,
+    normalize_to:(int, str, type(None)) = None
+):
+    # NOTE: this is horrible
+    xgrid = np.logspace(-9, 0, dtype=np.float32)
+    flavs = [-3, -2, -1, 1, 2, 3, 4, 21]
+    # NOTE: very very horrible
+    flavs_name = [r'$\bar s$',
+        r'$\bar u$',
+        r'$\bar d$',
+        r'$d$', r'$u$', r'$s$', r'$c$', r'$g$']
+    n_flavs = len(flavs)
+    qgrid = [1.65]
+    ref_pdf = pdfs[normalize_to].load()
+    ref_pdfgrid = ref_pdf.grid_values(flavs, xgrid, qgrid)[0].reshape((n_flavs,50))
+    ref_pdfgrid[ref_pdfgrid == 0] = 1e-08
+    df = pd.DataFrame(columns=flavs_name)
+    for pdf in pdfs:
+        this_pdf = pdf.load()
+        this_pdfgrid = this_pdf.grid_values(flavs, xgrid, qgrid)[0].reshape((n_flavs,50))
+        this_pdfgrid[this_pdfgrid == 0] = 1e-08
+        ratio = np.log(np.abs(ref_pdfgrid / this_pdfgrid))
+        dist = np.sum(ratio * ref_pdfgrid, axis=1)
+        df.loc[pdf] = dist
+    df['sum'] = df.sum(axis=1)
+    df.sort_values('sum', ascending=False, inplace=True)
+    return df

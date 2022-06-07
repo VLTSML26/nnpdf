@@ -290,7 +290,7 @@ def distance_grids(pdfs, xplotting_grids, normalize_to:(int,str,type(None))=None
         distance = Stats([np.sqrt((cv1-cv2)**2/(sg1**2/N1+sg2**2/N2))])
 
         newgrid = grid.copy_grid(grid_values=distance)
-        newgrids.append(newgrid)
+        newgrids.append(newgrid)        
 
     return newgrids
 
