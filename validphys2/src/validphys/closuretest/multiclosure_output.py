@@ -711,12 +711,30 @@ def bias_variance_and_arclength(
                 str(np.mean(sqrt_ratio)) +
                 "\t" +
                 str(df['sum'][0]) +
-                #"\t" +
-                #str(np.std(sqrt_ratio)) +
                 "\n"
                 )
     return 
     
+
+def bias_variance_and_nongaussianity(
+    experiments_bootstrap_sqrt_ratio, expected_xi_from_bias_variance, total_bootstrap_xi, pdf
+):
+    expected_xi = expected_xi_from_bias_variance.iat[-1,-1]
+    xi = np.mean(total_bootstrap_xi, axis=1)
+    diff = abs(expected_xi - np.mean(xi))
+    sqrt_ratio = np.mean(experiments_bootstrap_sqrt_ratio, axis=0)
+    with open("biasvariance_nongaussianity.dat", "a") as f:
+        log.warning("Writing on biasvariance_nongaussianity.dat.")
+        f.write(
+                pdf.name +
+                "\t" +
+                str(np.mean(sqrt_ratio)) +
+                "\t" +
+                str(diff) +
+                "\n"
+                )
+    return 
+
 
 # TODO: check the note below
 def sqrt_ratio_behavior(
