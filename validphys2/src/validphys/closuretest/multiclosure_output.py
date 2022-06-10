@@ -683,7 +683,6 @@ def bias_variance_and_distance_from_center(
 ):  
     df = pdfs_distance_table
     sqrt_ratio = np.mean(experiments_bootstrap_sqrt_ratio, axis=0)
-    import ipdb; ipdb.set_trace()
     with open("biasvariance_distance.dat", "a") as f:
         log.warning("Writing on biasvariance_distance.dat.")
         f.write(
@@ -698,6 +697,26 @@ def bias_variance_and_distance_from_center(
                 )
     return 
 
+
+def bias_variance_and_arclength(
+    experiments_bootstrap_sqrt_ratio, pdfs_arclengths_table, pdf
+):  
+    df = pdfs_arclengths_table
+    sqrt_ratio = np.mean(experiments_bootstrap_sqrt_ratio, axis=0)
+    with open("biasvariance_arclength.dat", "a") as f:
+        log.warning("Writing on biasvariance_arclength.dat.")
+        f.write(
+                pdf.name +
+                "\t" +
+                str(np.mean(sqrt_ratio)) +
+                "\t" +
+                str(df['sum'][0]) +
+                #"\t" +
+                #str(np.std(sqrt_ratio)) +
+                "\n"
+                )
+    return 
+    
 
 # TODO: check the note below
 def sqrt_ratio_behavior(
