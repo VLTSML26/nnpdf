@@ -9,6 +9,7 @@ import hashlib
 
 import numpy as np
 import pandas as pd
+from scipy import linalg as la
 
 from validphys.covmats import INTRA_DATASET_SYS_NAME, sqrt_covmat
 
@@ -100,7 +101,7 @@ def read_replica_pseudodata(fit, context_index, replica):
 
     return DataTrValSpec(pseudodata.drop("type", axis=1), tr.index, val.index)
 
-def make_replica(
+def _make_replica(
     groups_dataset_inputs_loaded_cd_with_cuts, 
     replica_mcseed,  
     dataset_inputs_sampling_covmat, 
@@ -229,6 +230,90 @@ def make_replica(
 
     return shifted_pseudodata
 
+def _make_replica_manip(
+    groups_dataset_inputs_loaded_cd_with_cuts, 
+    replica_mcseed,  
+    dataset_inputs_sampling_covmat, 
+    sep_mult, 
+    genrep=True 
+    ):
+    """Like _make_replica but with manipulation of the covmat.
+    """
+    if not genrep:
+        return np.concatenate([cd.central_values for cd in groups_dataset_inputs_loaded_cd_with_cuts])
+
+    # Seed the numpy RNG with the seed and the name of the datasets in this run
+    name_salt = "-".join(i.setname for i in groups_dataset_inputs_loaded_cd_with_cuts)
+    name_seed = int(hashlib.sha256(name_salt.encode()).hexdigest(), 16) % 10 ** 8
+    rng = np.random.default_rng(seed=replica_mcseed+name_seed)
+
+    #construct covmat
+    covmat = dataset_inputs_sampling_covmat
+    eigval, eigvect = la.eig(covmat)
+    eigval[np.argmax(eigval)] = np.min(eigval)
+
+    #Loading the data
+    pseudodatas = []
+    check_positive_masks = []
+    nonspecial_mult = []
+    special_mult = []
+    for cd in groups_dataset_inputs_loaded_cd_with_cuts:
+        # copy here to avoid mutating the central values.
+        pseudodata = cd.central_values.to_numpy()
+
+        pseudodatas.append(pseudodata)
+        #Separation of multiplicative errors. If separate_multiplicative is True also the exp_covmat is produced 
+        # without multiplicative errors
+        if sep_mult:
+            mult_errors = cd.multiplicative_errors
+            mult_uncorr_errors = mult_errors.loc[:, mult_errors.columns == "UNCORR"].to_numpy()
+            mult_corr_errors = mult_errors.loc[:, mult_errors.columns == "CORR"].to_numpy()
+            nonspecial_mult.append( (mult_uncorr_errors, mult_corr_errors) )
+            special_mult.append(
+                mult_errors.loc[:, ~mult_errors.columns.isin(INTRA_DATASET_SYS_NAME)]
+            )
+        if "ASY" in cd.commondataproc:
+            check_positive_masks.append(np.zeros_like(pseudodata, dtype=bool))
+        else:
+            check_positive_masks.append(np.ones_like(pseudodata, dtype=bool))
+    #concatenating special multiplicative errors, pseudodatas and positive mask 
+    if sep_mult:
+        special_mult_errors = pd.concat(special_mult, axis=0, sort=True).fillna(0).to_numpy()
+    all_pseudodata = np.concatenate(pseudodatas, axis=0)
+    full_mask = np.concatenate(check_positive_masks, axis=0)
+    # The inner while True loop is for ensuring a positive definite
+    # pseudodata replica
+    while True:
+        mult_shifts = []
+        # Prepare the per-dataset multiplicative shifts
+        for mult_uncorr_errors, mult_corr_errors in nonspecial_mult:
+        # convert to from percent to fraction
+            mult_shift = (
+                1 + mult_uncorr_errors * rng.normal(size=mult_uncorr_errors.shape) / 100
+            ).prod(axis=1)
+
+            mult_shift *= (
+                1 + mult_corr_errors * rng.normal(size=(1, mult_corr_errors.shape[1])) / 100
+            ).prod(axis=1)
+
+            mult_shifts.append(mult_shift)
+            
+        #If sep_mult is true then the multiplicative shifts were not included in the covmat
+        shifts = np.dot(eigvect * np.sqrt(eigval), rng.normal(size=eigval.shape))
+        mult_part = 1.
+        if sep_mult:
+            special_mult = (
+                1 + special_mult_errors * rng.normal(size=(1, 
+                special_mult_errors.shape[1])) / 100
+                ).prod(axis=1)
+            mult_part = np.concatenate(mult_shifts, axis=0)*special_mult
+        #Shifting pseudodata
+        shifted_pseudodata = (all_pseudodata + shifts)*mult_part
+        #positivity control
+        if np.all(shifted_pseudodata[full_mask] >= 0):
+            break
+
+    return shifted_pseudodata
 
 def indexed_make_replica(groups_index, make_replica):
     """Index the make_replica pseudodata appropriately

@@ -153,6 +153,10 @@ class N3FitConfig(Config):
             N3FIT_FIXED_CONFIG['use_thcovmat_in_sampling'] = thconfig.get('use_thcovmat_in_sampling', True)  
             N3FIT_FIXED_CONFIG['use_user_uncertainties'] = thconfig.get('use_user_uncertainties', False) 
             N3FIT_FIXED_CONFIG['use_scalevar_uncertainties'] = thconfig.get('use_scalevar_uncertainties', True) 
+        #Closuretest flags
+        N3FIT_FIXED_CONFIG['manipulate_eigenvalue'] = False
+        if (closureconfig:=file_content.get('closuretest')) is not None:
+            N3FIT_FIXED_CONFIG['manipulate_eigenvalue'] = closureconfig.get('manipulate_eigenvalue', False)
         #Sampling flags
         if (sam_t0:=file_content.get('sampling')) is not None:
             N3FIT_FIXED_CONFIG['use_t0_sampling'] = sam_t0.get('use_t0', False) 

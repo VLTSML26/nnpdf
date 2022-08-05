@@ -874,6 +874,15 @@ class CoreConfig(configparser.Config):
         else:
             return covmats._dataset_inputs_covmat_t0_considered
 
+    @configparser.explicit_node
+    def produce_make_replica(self, manipulate_eigenvalue: bool = False):
+        from validphys import pseudodata
+        if manipulate_eigenvalue:
+            log.warning('Using manipulate_eigenvalue from runcard.')
+            return pseudodata._make_replica_manip
+        else:
+            return pseudodata._make_replica
+    
     # TODO: Do this better and elsewhere
     @staticmethod
     def _check_dataspecs_type(dataspecs):
