@@ -18,6 +18,10 @@ from reportengine import collect
 FILE_PREFIX = "datacuts_theory_fitting_"
 
 log = logging.getLogger(__name__)
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    force=True)
 
 DataTrValSpec = namedtuple('DataTrValSpec', ['pseudodata', 'tr_idx', 'val_idx'])
 
@@ -249,6 +253,7 @@ def _make_replica_manip(
 
     #construct covmat
     covmat = dataset_inputs_sampling_covmat
+    log.info('covmat shape: %s', covmat.shape)
     eigval, eigvect = la.eig(covmat)
     eigval[np.argmax(eigval)] = np.min(eigval)
 

@@ -1592,7 +1592,7 @@ class CoreConfig(configparser.Config):
         # slightly superfluous, only one default at present but perhaps
         # somebody will want to add to this at some point e.g for th. uncertainties
         allowed = {
-            "standard_report": "experiment",
+            "standard_report": "ALL",
         }
         return allowed[spec]
 
