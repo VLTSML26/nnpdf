@@ -153,7 +153,7 @@ class N3FitConfig(Config):
             N3FIT_FIXED_CONFIG['use_thcovmat_in_fitting'] = thconfig.get('use_thcovmat_in_fitting', True) 
             N3FIT_FIXED_CONFIG['use_thcovmat_in_sampling'] = thconfig.get('use_thcovmat_in_sampling', True)  
             if N3FIT_FIXED_CONFIG['use_thcovmat_in_fitting'] or N3FIT_FIXED_CONFIG['use_thcovmat_in_sampling']:
-                N3FIT_FIXED_CONFIG['use_theory_covmat_flag'] = True
+                N3FIT_FIXED_CONFIG['theory_covmat_flag'] = True
             N3FIT_FIXED_CONFIG['use_user_uncertainties'] = thconfig.get('use_user_uncertainties', False) 
             N3FIT_FIXED_CONFIG['use_scalevar_uncertainties'] = thconfig.get('use_scalevar_uncertainties', True) 
         #Closuretest flags
