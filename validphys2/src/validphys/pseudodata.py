@@ -255,7 +255,7 @@ def _make_replica_manip(
     covmat = dataset_inputs_sampling_covmat
     log.info('covmat shape: %s', covmat.shape)
     eigval, eigvect = la.eig(covmat)
-    eigval[np.argmax(eigval)] = np.min(eigval)
+    eigval[np.argmax(eigval)] = np.min(eigval) # try also smaller eigs
 
     #Loading the data
     pseudodatas = []
