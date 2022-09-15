@@ -164,7 +164,7 @@ def _filter_real_data(filter_path, data):
         nfull, ncut = _write_ds_cut_data(path, dataset)
         total_data_points += nfull
         total_cut_data_points += ncut
-        dataset.load().Export(str(path))
+        dataset.load_commondata().Export(str(path))
     return total_data_points, total_cut_data_points
 
 
@@ -199,14 +199,14 @@ def check_positivity(posdatasets):
     """Verify positive datasets are ready for the fit."""
     log.info('Verifying positivity tables:')
     for pos in posdatasets:
-        pos.load()
+        pos.load_commondata()
         log.info(f'{pos.name} checked.')
 
 def check_integrability(integdatasets):
     """Verify positive datasets are ready for the fit."""
     log.info('Verifying integrability tables:')
     for integ in integdatasets:
-        integ.load()
+        integ.load_commondata()
         log.info(f'{integ.name} checked.')
 
 class PerturbativeOrder:
