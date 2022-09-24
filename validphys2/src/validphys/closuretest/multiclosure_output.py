@@ -463,7 +463,21 @@ def plot_data_central_diff_histogram(experiments_replica_central_diff):
     ax.legend()
     return fig
 
-
+@figure
+def plot_data_qqplot(
+    experiments_replica_central_diff
+):
+    import scipy.stats as st
+    scaled_diffs = np.concatenate([
+        (central_diff / sigma).flatten()
+        for sigma, central_diff
+        in experiments_replica_central_diff
+    ])
+    fig, ax = plt.subplots()
+    st.probplot(scaled_diffs, fit=True, plot=ax)
+    ax.set_title("Quantile-Quantile Plot for the difference distribution")
+    # ax.legend()
+    return fig
 
 @table
 def dataset_ratio_error_finite_effects(
