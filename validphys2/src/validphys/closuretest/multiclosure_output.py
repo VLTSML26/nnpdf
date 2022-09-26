@@ -929,6 +929,29 @@ def groups_bootstrap_expected_xi_table(groups_bootstrap_expected_xi, groups_data
 
 
 @table
+def closuretest_summary(manipulate_eigenvalue,
+genrep,
+fakepdf,
+theoryid,
+fakenoise):
+    level = 0
+    if fakenoise and not genrep:
+        level = 1
+    if fakenoise and genrep:
+        level = 2
+    if genrep and not fakenoise:
+        level = 'unknown'
+    summary = {
+        'Level': level,
+        'Theory ID': theoryid.id,
+        'Fake PDF': fakepdf,
+        'Manipulate Eigenvalue': manipulate_eigenvalue,
+    }
+    df = pd.DataFrame.from_dict(summary, orient='index', columns=['Closure test summary'])
+    return df
+
+
+@table
 def experiments_bootstrap_xi_table(
     experiments_bootstrap_xi, experiments_data, total_bootstrap_xi
 ):
@@ -1053,7 +1076,7 @@ def plot_experiments_sqrt_ratio_bootstrap_distribution(
             x,
             scipy.stats.norm.pdf(x, mean, std),
             "-r",
-            label=f"Corresponding normal distribution: mean = {mean:.2g}, std = {std:.2g}",
+            label=r"Fit: $\mu=$%.2f $\sigma=$%.2f" % (mean, std),
         )
         ax.legend()
         ax.set_title(f"Bootstrap distribution of sqrt(bias/variance) for {exp}")
