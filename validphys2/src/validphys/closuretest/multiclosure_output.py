@@ -1231,10 +1231,16 @@ def plot_xi_behavior(
     ax.legend(framealpha=1)
     return fig
 
+#TODO: find a way to color the figure as the rest of the report
 @figure
 def plot_data_qqplot(
     experiments_replica_central_diff
 ):
+    """
+    To be shown alongside `plot_data_central_diff_histogram`, this plot provides
+    an ulterior visive validation of the gaussianity of the distribution of the 
+    difference between central prediction and underlying law prediction.
+    """
     import scipy.stats as st
     scaled_diffs = np.concatenate([
         (central_diff / sigma).flatten()
