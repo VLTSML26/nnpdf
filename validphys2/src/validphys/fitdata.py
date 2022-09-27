@@ -158,6 +158,7 @@ def replica_data(fit, replica_paths):
 @table
 def fit_summary(fit_name_with_covmat_label, replica_data, total_chi2_data, total_phi_data):
     """ Summary table of fit properties
+        - Goodness-of-fit indicator
         - Central chi-squared
         - Average chi-squared
         - Training and Validation error functions
@@ -185,8 +186,13 @@ def fit_summary(fit_name_with_covmat_label, replica_data, total_chi2_data, total
     phi, _ = total_phi_data
     phi_err = np.std(member_chi2)/(2.0*phi*np.sqrt(nrep))
 
+    goodness_indicator = ''
+    if abs(2 - np.mean(etrain)) > np.std(etrain) or abs(2 - np.mean(evalid)) > np.std(evalid):
+        goodness_indicator = '*'
+
     VET = ValueErrorTuple
-    data = OrderedDict( ((r"$\chi^2$",             f"{central_chi2:.5f}"),
+    data = OrderedDict( ((r"",                     f"{goodness_indicator}"),
+                         (r"$\chi^2$",             f"{central_chi2:.5f}"),
                          (r"$<E_{\mathrm{trn}}>$", f"{VET(np.mean(etrain), np.std(etrain))}"),
                          (r"$<E_{\mathrm{val}}>$", f"{VET(np.mean(evalid), np.std(evalid))}"),
                          (r"$<TL>$",               f"{VET(np.mean(nite), np.std(nite))}"),
