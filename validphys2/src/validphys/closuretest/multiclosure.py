@@ -38,7 +38,7 @@ SAMPLING_INTERVAL = 5
 @check_use_t0
 @check_t0pdfset_matches_multiclosure_law
 def internal_multiclosure_dataset_loader(
-    dataset, fits_pdf, multiclosure_underlyinglaw, fits, dataset_inputs_t0_covmat_from_systematics
+    dataset, fits_pdf, multiclosure_underlyinglaw, fits, t0_covmat_from_systematics
 ):
     """Internal function for loading multiple theory predictions for a given
     dataset and a single covariance matrix using underlying law as t0 PDF,
@@ -88,11 +88,10 @@ def internal_multiclosure_dataset_loader(
     fits_underlying_predictions = ThPredictionsResult.from_convolution(
         multiclosure_underlyinglaw, dataset
     )
-
-    sqrt_covmat = la.cholesky(dataset_inputs_t0_covmat_from_systematics, lower=True)
+    sqrt_covmat = la.cholesky(t0_covmat_from_systematics, lower=True)
     # TODO: support covmat reg and theory covariance matrix
     # possibly make this a named tuple
-    return (fits_dataset_predictions, fits_underlying_predictions, dataset_inputs_t0_covmat_from_systematics, sqrt_covmat)
+    return (fits_dataset_predictions, fits_underlying_predictions, t0_covmat_from_systematics, sqrt_covmat)
 
 
 @check_fits_underlying_law_match
@@ -136,32 +135,33 @@ def fits_dataset_bias_variance(
     centrals = reps.mean(axis=2)
     # place bins on first axis
     diffs = law_th.central_value[:, np.newaxis] - centrals.T
-    try: 
-        biases = calc_chi2(sqrtcov, diffs)
-    except:
-        tmp_dict = {
-            'sqrtcov': sqrtcov.shape,
-            'diffs': diffs.shape
-        }
-        print(tmp_dict)
-        size = diffs.shape[0]
-        fixed_cov = sqrtcov[:size, :size]
-        biases = calc_chi2(fixed_cov, diffs)
+    # tmp_dict = {
+    #     'sqrtcov': sqrtcov.shape,
+    #     'diffs': diffs.shape
+    # }
+    # print(tmp_dict)
+    # try: 
+    biases = calc_chi2(sqrtcov, diffs)
+    # except:
+    #     print('didnt work')
+    #     size = diffs.shape[0]
+    #     fixed_cov = sqrtcov[:size, :size]
+    #     biases = calc_chi2(fixed_cov, diffs)
     variances = []
     # this seems slow but breaks for datasets with single data point otherwise
     for i in range(reps.shape[0]):
         diffs = reps[i, :, :] - reps[i, :, :].mean(axis=1, keepdims=True)
-        try:
-            variances.append(np.mean(calc_chi2(sqrtcov, diffs)))
-        except:
-            tmp_dict = {
-                'sqrtcov': sqrtcov.shape,
-                'diffs': diffs.shape
-            }
-            print(tmp_dict)
-            size = diffs.shape[0]
-            fixed_cov = sqrtcov[:size, :size]
-            variances.append(np.mean(calc_chi2(fixed_cov, diffs)))
+        # try:
+        variances.append(np.mean(calc_chi2(sqrtcov, diffs)))
+        # except:
+        #     tmp_dict = {
+        #         'sqrtcov': sqrtcov.shape,
+        #         'diffs': diffs.shape
+        #     }
+        #     print(tmp_dict)
+        #     size = diffs.shape[0]
+        #     fixed_cov = sqrtcov[:size, :size]
+        #     variances.append(np.mean(calc_chi2(fixed_cov, diffs)))
     return biases, np.asarray(variances), len(law_th)
 
 
@@ -213,7 +213,7 @@ Indeed, it is not called in any Validphys report since it is only called in func
 but actually this function is only called in experiments_bias_variance_ratio in the following way
 > datasets_bias_variance_ratio(experiments_expected_bias_variance, experiments_data,)
 so that instead of datasets_expected_bias_variance, experiments_expected_bias_variance is passed to the function.
-I guess that who wrote this changed his mind and used experiments_expected_bias_variance insted.
+I guess that who wrote this changed his mind and used experiments_expected_bias_variance instead.
 He must have forgotten to delete this, or maybe he never used it and thought it wasn't bugged.
 """
 
