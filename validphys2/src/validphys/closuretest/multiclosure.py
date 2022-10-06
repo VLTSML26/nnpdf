@@ -144,12 +144,24 @@ def fits_dataset_bias_variance(
             'diffs': diffs.shape
         }
         print(tmp_dict)
-        biases = calc_chi2(np.randomd.rand(diffs.shape[0]), diffs)
+        size = diffs.shape[0]
+        fixed_cov = sqrtcov[:size, :size]
+        biases = calc_chi2(fixed_cov, diffs)
     variances = []
     # this seems slow but breaks for datasets with single data point otherwise
     for i in range(reps.shape[0]):
         diffs = reps[i, :, :] - reps[i, :, :].mean(axis=1, keepdims=True)
-        variances.append(np.mean(calc_chi2(sqrtcov, diffs)))
+        try:
+            variances.append(np.mean(calc_chi2(sqrtcov, diffs)))
+        except:
+            tmp_dict = {
+                'sqrtcov': sqrtcov.shape,
+                'diffs': diffs.shape
+            }
+            print(tmp_dict)
+            size = diffs.shape[0]
+            fixed_cov = sqrtcov[:size, :size]
+            variances.append(np.mean(calc_chi2(fixed_cov, diffs)))
     return biases, np.asarray(variances), len(law_th)
 
 
