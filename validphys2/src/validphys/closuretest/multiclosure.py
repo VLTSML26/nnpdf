@@ -136,7 +136,15 @@ def fits_dataset_bias_variance(
     centrals = reps.mean(axis=2)
     # place bins on first axis
     diffs = law_th.central_value[:, np.newaxis] - centrals.T
-    biases = calc_chi2(sqrtcov, diffs)
+    try: 
+        biases = calc_chi2(sqrtcov, diffs)
+    except:
+        tmp_dict = {
+            'sqrtcov': sqrtcov.shape,
+            'diffs': diffs.shape
+        }
+        print(tmp_dict)
+        biases = calc_chi2(np.randomd.rand(diffs.shape[0]), diffs)
     variances = []
     # this seems slow but breaks for datasets with single data point otherwise
     for i in range(reps.shape[0]):

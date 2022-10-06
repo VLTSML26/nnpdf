@@ -14,6 +14,8 @@ import pandas as pd
 log = logging.getLogger(__name__)
 
 
+# NOTE: why does diff have more than one dimension?
+# NOTE: aren't we supposed to take (sqrtcov)^-1 instead of sqrtcov?
 def calc_chi2(sqrtcov, diffs):
     """Elementary function to compute the chi², given a Cholesky decomposed
     lower triangular part and a vector of differences.
