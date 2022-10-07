@@ -1015,16 +1015,16 @@ def groups_bootstrap_xi_comparison(
 def plot_experiments_sqrt_ratio_bootstrap_distribution(
     experiments_bootstrap_sqrt_ratio, experiments_data
 ):
-    """Plots a histogram for each experiment and the total, showing the
-    distribution of bootstrap samples. Takes the mean and std deviation of the
-    bootstrap sample and plots the corresponding scaled normal distribution
-    for comparison. The limits are set to be +/- 3 std deviations of the mean.
-
+    """Plots a histogram for each experiment, showing the distribution of 
+    bootstrap samples. Takes the mean and std deviation of the bootstrap sample 
+    and plots the corresponding scaled normal distribution for comparison. 
+    The limits are set to be +/- 3 std deviations of the mean.
     """
-    # experiments_bootstrap_sqrt_ratio includes total. str(exp) is only used to
-    # generate title, so appending string is fine.
+    # NOTE: experiments_bootstrap_sqrt_ratio includes total as its last element.
+    # while this function does not include total. 
+    # Refer to `plot_total_sqrt_ratio_bootstrap_distribution` for total ratio.
     for sqrt_ratio_sample, exp in zip(
-        experiments_bootstrap_sqrt_ratio, experiments_data + ["Total"]
+        experiments_bootstrap_sqrt_ratio, experiments_data
     ):
         fig, ax = plt.subplots()
         ax.hist(sqrt_ratio_sample, bins=20, density=True)
@@ -1038,13 +1038,40 @@ def plot_experiments_sqrt_ratio_bootstrap_distribution(
         ax.plot(
             x,
             scipy.stats.norm.pdf(x, mean, std),
-            "-r",
+            "k",
             label=r"Fit: $\mu=$%.2f $\sigma=$%.2f" % (mean, std),
         )
         ax.legend()
-        ax.set_title(f"Bootstrap distribution of sqrt(bias/variance) for {exp}")
-        ax.set_xlabel("Sqrt(bias/variance)")
+        ax.set_title(r"Bootstrap distribution of $\sqrt{R_{bv}}$ for " + str(exp))
+        ax.set_xlabel(r"$\sqrt{R_{bv}}$")
         yield fig
+
+@figure
+def plot_total_sqrt_ratio_bootstrap_distribution(
+    experiments_bootstrap_sqrt_ratio
+):
+    """ Like `plot_experiments_sqrt_ratio_bootstrap_distribution` but for total.
+    """
+    total = experiments_bootstrap_sqrt_ratio[-1]
+    fig, ax = plt.subplots()
+    ax.hist(total, bins=20, density=True)
+    mean = np.mean(total)
+    std = np.std(total)
+
+    xlim = (mean - 3 * std, mean + 3 * std)
+    ax.set_xlim(xlim)
+
+    x = np.linspace(*xlim, 100)
+    ax.plot(
+        x,
+        scipy.stats.norm.pdf(x, mean, std),
+        "k",
+        label=r"Fit: $\mu=$%.2f $\sigma=$%.2f" % (mean, std),
+    )
+    ax.legend()
+    ax.set_title(r"Total bootstrap distribution of $\sqrt{R_{bv}}$")
+    ax.set_xlabel(r"$\sqrt{R_{bv}}$")
+    return fig
 
 
 @figuregen
@@ -1170,6 +1197,7 @@ def plot_total_bias_variance_distributions(
             "fits bias distribution",
             "replicas variance distribution",
     ]
+    import ipdb; ipdb.set_trace()
     ax.hist(
         [total_bias, total_var],
         density=True,
