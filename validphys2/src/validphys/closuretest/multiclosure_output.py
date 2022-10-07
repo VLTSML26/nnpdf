@@ -251,6 +251,20 @@ def total_bias_variance_ratio(
 
 
 @table
+def total_sqrt_bias_variance_ratio(
+    sqrt_experiments_bias_variance_ratio, sqrt_datasets_bias_variance_ratio, experiments_data
+):
+    """
+    Like `total_bias_variance_ratio` but it's the square root.
+    """
+    return total_bias_variance_ratio(
+        sqrt_experiments_bias_variance_ratio,
+        sqrt_datasets_bias_variance_ratio,
+        experiments_data
+    )
+
+
+@table
 def expected_xi_from_bias_variance(sqrt_experiments_bias_variance_ratio):
     """Given the ``sqrt_experiments_bias_variance_ratio`` calculate a predicted
     value of :math:`\\xi_{1 \sigma}` for each experiment. The predicted value is based of
@@ -781,8 +795,8 @@ def plot_sqrt_ratio_behavior(
     """
     df, cs = sqrt_ratio_behavior
     fig, axs = plt.subplots(3, 1,
-        sharex=True, gridspec_kw={"height_ratios":[4,1,1]},
-        figsize=(15,13),
+        sharex=True, 
+        gridspec_kw={"height_ratios":[4,1,1]},
     )
     fig.subplots_adjust(hspace=0.02)
     #
@@ -790,7 +804,7 @@ def plot_sqrt_ratio_behavior(
     xs = np.arange(6, len(fits), 0.1)
     #
     ax = axs[0]
-    ax.set_title(r'$\sqrt{R_{bv}}$ indicator',
+    ax.set_title(r'Trend of total $\sqrt{R_{bv}}$.',
         fontsize=25,
     )
     ax.plot(df['Nfits'], df['SMA5'],
@@ -1044,6 +1058,7 @@ def plot_experiments_sqrt_ratio_bootstrap_distribution(
         ax.legend()
         ax.set_title(r"Bootstrap distribution of $\sqrt{R_{bv}}$ for " + str(exp))
         ax.set_xlabel(r"$\sqrt{R_{bv}}$")
+        ax.set_ylabel(r"Counts = " + str(len(sqrt_ratio_sample)))
         yield fig
 
 @figure
@@ -1071,6 +1086,7 @@ def plot_total_sqrt_ratio_bootstrap_distribution(
     ax.legend()
     ax.set_title(r"Total bootstrap distribution of $\sqrt{R_{bv}}$")
     ax.set_xlabel(r"$\sqrt{R_{bv}}$")
+    ax.set_ylabel(r"Counts = " + str(len(total)))
     return fig
 
 
@@ -1093,12 +1109,29 @@ def plot_experiments_xi_bootstrap_distribution(
     )
     # Update the title and x label on each plot to reflect that we're plotting
     # \xi_1sigma, don't forget Total plot.
-    for fig, exp in zip(xi_plots, experiments_data + ["Total"]):
+    for fig, exp in zip(xi_plots, experiments_data):
         ax = fig.gca()
+        mean = np.mean(xi_1sigma)
+        std = np.std(xi_1sigma)
+        xlim = (mean - 3 * std, mean + 3 * std)
+        ax.set_xlim(xlim)
         ax.set_title(r"Bootstrap distribution of $\xi_{1\sigma}$ for " + str(exp))
         ax.set_xlabel(r"$\xi_{1\sigma}$")
         yield fig
 
+@figure
+def plot_total_xi_bootstrap_distribution(
+    total_bootstrap_xi
+):
+    xi_plots = plot_total_sqrt_ratio_bootstrap_distribution(total_bootstrap_xi)
+    ax = xi_plots.gca()
+    mean = np.mean(total_bootstrap_xi)
+    std = np.std(total_bootstrap_xi)
+    xlim = (mean - 3 * std, mean + 3 * std)
+    ax.set_xlim(xlim)
+    ax.set_title(r"Total bootstrap distribution of $\xi_{1\sigma}$")
+    ax.set_xlabel(r"$\xi_{1\sigma}$")
+    return xi_plots
 
 @figuregen
 def plot_bias_variance_distributions(
@@ -1169,8 +1202,8 @@ def plot_experiments_bias_variance_distributions(
         ):
         fig, ax = plt.subplots()
         labels = [
-            "fits bias distribution",
-            "replicas variance distribution",
+            "Fits bias distribution",
+            "Replicas variance distribution",
         ]
         ax.hist(
             [exp_biases, exp_vars],
@@ -1194,10 +1227,9 @@ def plot_total_bias_variance_distributions(
     )
     fig, ax = plt.subplots()
     labels = [
-            "fits bias distribution",
-            "replicas variance distribution",
+            "Fits bias distribution",
+            "Replicas variance distribution",
     ]
-    import ipdb; ipdb.set_trace()
     ax.hist(
         [total_bias, total_var],
         density=True,
@@ -1255,8 +1287,8 @@ def plot_xi_behavior(
     """
     df, cs = xi_behavior
     fig, axs = plt.subplots(3, 1,
-        sharex=True, gridspec_kw={"height_ratios":[4,1,1]},
-        figsize=(15,13),
+        sharex=True, 
+        gridspec_kw={"height_ratios":[4,1,1]},
     )
     fig.subplots_adjust(hspace=0.02)
 
@@ -1267,7 +1299,7 @@ def plot_xi_behavior(
 
     # Plot 1:
     ax = axs[0]
-    ax.set_title(r'$\xi_{1\sigma}$ indicator',
+    ax.set_title(r'Trend of total $\xi_{1\sigma}$.',
         fontsize=25,
     )
     ax.plot(df['Nfits'], df['SMA5'],

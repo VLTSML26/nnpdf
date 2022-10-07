@@ -351,7 +351,6 @@ def data_xi(data_replica_and_central_diff):
     """Like dataset_xi but for all data"""
     return dataset_xi(data_replica_and_central_diff)
 
-
 experiments_xi_measured = collect("data_xi", ("group_dataset_inputs_by_experiment",))
 experiments_replica_central_diff = collect(
     "data_replica_and_central_diff", ("group_dataset_inputs_by_experiment",))
