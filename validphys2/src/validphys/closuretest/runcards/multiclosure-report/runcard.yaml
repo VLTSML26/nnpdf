@@ -1,0 +1,130 @@
+#
+# New runcard for multiclosure-test reporting
+# Author: Samuele Voltan
+# Last updated: October 2022
+#
+
+# reference fit
+fit: 220807-sv-001
+
+# all fits
+fits:
+    - 220807-sv-001
+    - 220807-sv-002
+    - 220807-sv-003
+    - 220807-sv-004
+    - 220807-sv-005
+    - 220807-sv-006
+    - 220807-sv-007
+    - 220807-sv-008
+    - 220807-sv-009
+    - 220807-sv-010
+    - 220807-sv-011
+    - 220807-sv-012
+    - 220807-sv-013
+    - 220807-sv-014
+    - 220807-sv-015
+    - 220807-sv-016
+    - 220807-sv-017
+    - 220807-sv-018
+    - 220807-sv-019
+    - 220807-sv-020
+    - 220807-sv-021
+    - 220807-sv-022
+    - 220807-sv-024
+    - 220809-sv-001
+    - 220805-sv-001
+
+# pdfs declaration
+t0pdfset: 220426-sv-003_fakepdf
+fakepdf: 220426-sv-003_fakepdf
+pdfs:
+    - NNPDF40_nnlo_as_01180
+    - 220426-sv-003_fakepdf
+
+# datasets for out-of-sample statistics (not included in fit runcard)
+on_newdata:
+    use_fitcommondata: False
+    dataset_inputs:
+        - {dataset: DYE906R_dw_ite, frac: 0.75, cfac: [ACC,QCD]}
+        - {dataset: ATLASWZRAP11CF, frac: 0.75, cfac: [QCD]}
+        - {dataset: ATLASDY2D8TEV, frac: 0.75, cfac: [QCDEWK]}
+        - {dataset: ATLAS_DY_2D_8TEV_LOWMASS, cfac: [QCD]}
+        - {dataset: ATLAS_WZ_TOT_13TEV, frac: 1.0, cfac: [NRM,QCD]}
+        - {dataset: ATLAS_WP_JET_8TEV_PT, frac: 0.75, cfac: [QCD]}
+        - {dataset: ATLAS_WM_JET_8TEV_PT, frac: 0.75, cfac: [QCD]}
+        - {dataset: ATLAS_TTBARTOT_13TEV_FULLLUMI, frac: 0.75, cfac: [QCD]}
+        - {dataset: ATLAS_TTB_DIFF_8TEV_LJ_TTRAPNORM, frac: 1.0, cfac: [QCD]}
+        - {dataset: ATLAS_TOPDIFF_DILEPT_8TEV_TTRAPNORM, frac: 1.0, cfac: [QCD]}
+        - {dataset: ATLAS_1JET_8TEV_R06_DEC, frac: 0.75, cfac: [QCD]}
+        - {dataset: ATLAS_2JET_7TEV_R06, frac: 0.75, cfac: [QCD]}
+        - {dataset: ATLASPHT15_SF, frac: 0.75, cfac: [QCD, EWK]}
+        - {dataset: ATLAS_SINGLETOP_TCH_R_7TEV, frac: 1.0, cfac: [QCD]}
+        - {dataset: ATLAS_SINGLETOP_TCH_R_13TEV, frac: 1.0, cfac: [QCD]}
+        - {dataset: ATLAS_SINGLETOP_TCH_DIFF_7TEV_T_RAP_NORM, frac: 1.0, cfac: [QCD]}
+        - {dataset: ATLAS_SINGLETOP_TCH_DIFF_7TEV_TBAR_RAP_NORM, frac: 1.0, cfac: [QCD]}
+        - {dataset: ATLAS_SINGLETOP_TCH_DIFF_8TEV_T_RAP_NORM, frac: 0.75, cfac: [QCD]}
+        - {dataset: ATLAS_SINGLETOP_TCH_DIFF_8TEV_TBAR_RAP_NORM, frac: 0.75, cfac: [QCD]}
+        - {dataset: CMS_2JET_7TEV, frac: 0.75, cfac: [QCD]}
+        - {dataset: CMS_1JET_8TEV, frac: 0.75, cfac: [QCD]}
+        - {dataset: CMSTTBARTOT5TEV, frac: 1.0, cfac: [QCD]}
+        - {dataset: CMS_TTBAR_2D_DIFF_MTT_TRAP_NORM, frac: 1.0, cfac: [QCD]}
+        - {dataset: CMS_TTB_DIFF_13TEV_2016_2L_TRAP, frac: 1.0, cfac: [QCD]}
+        - {dataset: CMS_TTB_DIFF_13TEV_2016_LJ_TRAP, frac: 1.0, cfac: [QCD]}
+        - {dataset: CMS_SINGLETOP_TCH_TOT_7TEV, frac: 1.0, cfac: [QCD]}
+        - {dataset: CMS_SINGLETOP_TCH_R_8TEV, frac: 1.0, cfac: [QCD]}
+        - {dataset: CMS_SINGLETOP_TCH_R_13TEV, frac: 1.0, cfac: [QCD]}
+        - {dataset: LHCB_Z_13TEV_DIMUON, frac: 1.0, cfac: [QCD]}
+        - {dataset: LHCB_Z_13TEV_DIELECTRON, frac: 1.0, cfac: [QCD]}
+
+# datasets from fit runcard
+on_samedata:
+    use_fitcommondata: True
+    dataset_inputs:
+        from_: fit
+
+# config parameters
+q2min: 3.49
+w2min: 12.5
+theoryid: 200
+Q: 1.61
+metadata_group: experiment
+use_cuts: internal
+use_t0: True
+
+# closuretest parameters
+genrep: true
+manipulate_eigenvalue: true
+fakenoise: true
+use_sameseed: False
+
+# plotting parameters
+bases:
+  - basis: evolution
+  - basis: flavour
+
+# meta
+meta:
+    title: Multiclosure inconsistency-test report
+    keywords: [multiclosure, nnpdf40]
+    author: Samuele Voltan
+
+# plots and tables handled by external markdown files
+plot_delta_chi2_report:
+    meta: Null
+    template: deltachi2.md
+
+plot_biasvariance_report:
+    meta: Null
+    template: biasvariance.md
+
+plot_replicas_report:
+    meta: Null
+    template: plotreplicas.md
+
+# template markdown file
+template: multiclosure_report.md
+
+# action
+actions_:
+    - report(main=true)
