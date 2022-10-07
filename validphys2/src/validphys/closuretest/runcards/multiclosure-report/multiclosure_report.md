@@ -32,7 +32,7 @@ We show the normalized distributions of total bias and variance for this closure
 
 {@ on_newdata plot_total_bias_variance_distributions @}
 
-Below is shown the distribution of bootstrap samples of $R_\text{bv}$ alongside its fitted corresponding scaled normal distribution distribution for comparison.
+Below is shown the distribution of bootstrap samples of $R_\text{bv}$ for the entire number of datapoints, alongside its fitted corresponding scaled normal distribution for comparison.
 
 {@ on_newdata plot_total_sqrt_ratio_bootstrap_distribution @}
 
@@ -45,9 +45,12 @@ For a more detailed discussion of $R_\text{bv}$ for single datasets or experimen
 
 ### Quantile indicator
 
-{@ on_newdata plot_experiments_xi_bootstrap_distribution @}
-All the previous considerations hold.
-The expected value for this indicator is calculated from the measured value of $R_\text{bv}$.
+We show the distribution of bootstrap samples of $\xi_{1\sigma}$ for the entire dataset, alongside its fitted corresponding scaled normal distribution for comparison.
+
+{@ plot_total_xi_bootstrap_distribution @}
+
+Below is shown the trend of the total bootstrapped value of $\xi_{1\sigma}$.
+The expected value for this indicator is calculated from the measured value of $R_\text{bv}$: this predicted value is based on the assumption that the difference between replica and central prediction and the difference between central prediction and underlying prediction are both gaussians centered on zero.
 
 {@ on_newdata plot_xi_behavior @}
 

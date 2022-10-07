@@ -19,4 +19,4 @@ Below is shown the distribution of bootstrap samples of $R_\text{bv}$ alongside 
 
 This table provides informations about $R_\text{bv}$ for single experiments in the out-of-sample datasets considered.
 
-{@ on_newdata total_bias_variance_ratio @}
+{@ on_newdata total_sqrt_bias_variance_ratio @}
