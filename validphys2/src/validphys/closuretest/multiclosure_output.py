@@ -795,7 +795,8 @@ def plot_sqrt_ratio_behavior(
     """
     df, cs = sqrt_ratio_behavior
     fig, axs = plt.subplots(3, 1,
-        sharex=True, 
+        sharex=True,
+        figsize=(7,6),
         gridspec_kw={"height_ratios":[4,1,1]},
     )
     fig.subplots_adjust(hspace=0.02)
@@ -804,15 +805,11 @@ def plot_sqrt_ratio_behavior(
     xs = np.arange(6, len(fits), 0.1)
     #
     ax = axs[0]
-    ax.set_title(r'Trend of total $\sqrt{R_{bv}}$.',
-        fontsize=25,
-    )
+    ax.set_title(r'Trend of total $\sqrt{R_{bv}}$.')
     ax.plot(df['Nfits'], df['SMA5'],
-        linewidth=3,
         label='5 point moving average',
     )
     ax.errorbar(df['Nfits'], df['Measured'], df['BootError'],
-        capsize=5,
         linestyle='',
         marker='s',
         color='k',
@@ -820,7 +817,6 @@ def plot_sqrt_ratio_behavior(
         label=r'Measured $\sqrt{R_{bv}}$',
     )
     ax.axhline(1,
-        linewidth=3,
         linestyle='dashed',
         color='tab:red',
         label='Ideal',
@@ -1287,7 +1283,8 @@ def plot_xi_behavior(
     """
     df, cs = xi_behavior
     fig, axs = plt.subplots(3, 1,
-        sharex=True, 
+        sharex=True,
+        figsize=(7,6),
         gridspec_kw={"height_ratios":[4,1,1]},
     )
     fig.subplots_adjust(hspace=0.02)
@@ -1299,11 +1296,8 @@ def plot_xi_behavior(
 
     # Plot 1:
     ax = axs[0]
-    ax.set_title(r'Trend of total $\xi_{1\sigma}$.',
-        fontsize=25,
-    )
+    ax.set_title(r'Trend of total $\xi_{1\sigma}$.')
     ax.plot(df['Nfits'], df['SMA5'],
-        linewidth=3,
         label='5 point moving average',
     )
     ax.plot(df['Nfits'], df['Expected'],
@@ -1311,7 +1305,6 @@ def plot_xi_behavior(
         label=r'Expected $\xi{1\sigma}$',
     )
     ax.errorbar(df['Nfits'], df['Measured'], df['BootError'],
-        capsize=5,
         linestyle='',
         marker='s',
         color='k',
@@ -1319,7 +1312,6 @@ def plot_xi_behavior(
         label=r'Measured $\xi{1\sigma}$',
     )
     ax.axhline(0.68,
-        linewidth=3,
         linestyle='dashed',
         color='tab:red',
         label='Ideal',

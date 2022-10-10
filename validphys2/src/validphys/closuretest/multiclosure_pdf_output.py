@@ -411,3 +411,96 @@ def plot_multiclosure_correlation_eigenvalues(fits_correlation_matrix_totalpdf):
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.legend()
     return fig
+
+@figure
+def plot_pdf_central_diff_histogram_and_qq(replica_and_central_diff_totalpdf):
+    sigma, delta = replica_and_central_diff_totalpdf
+    scaled_diffs = (delta / sigma).flatten()
+    fig, axs = plt.subplots(2, 1, 
+        figsize=(7,7),
+        gridspec_kw={"height_ratios":[3,1]}
+        )
+    fig.subplots_adjust(hspace=0.1)
+    #
+    ax = axs[0]
+    ax.set_title("Normalized distribution of difference to input PDF")
+    xlim = (-3, 3)
+    ax.set_xlim(xlim)
+    x = np.linspace(*xlim, 100)
+    values, bins, _ = ax.hist(
+        scaled_diffs, 
+        bins=50, 
+        density=True, 
+        label="Central PDF distribution",
+    )
+    bins_center = (bins[1:] + bins[:-1]) / 2
+    ax.plot(
+        x,
+        scipy.stats.norm.pdf(x),
+        "k",
+        linestyle="--",
+        label="Reference: $\mu=$%.2f $\sigma=$%.2f" % (0, 1),
+    )
+    (mu, sigma) = scipy.stats.norm.fit(scaled_diffs)
+    ax.plot(
+        x,
+        scipy.stats.norm.pdf(x, mu, sigma),
+        "k",
+        label=r"Fit: $\mu=$%.2f $\sigma=$%.2f" % (mu, sigma),
+    )
+    ax.legend()
+    #
+    ax = axs[1]
+    import scipy.stats as st
+    st.probplot(scaled_diffs, fit=True, plot=ax)
+    ax.set_title("")
+    ax.set_ylabel("")
+    return fig
+
+@figure
+def plot_data_central_diff_histogram_and_qq(experiments_replica_central_diff):
+    scaled_diffs = np.concatenate([
+        (central_diff / sigma).flatten()
+        for sigma, central_diff
+        in experiments_replica_central_diff
+    ])
+    fig, axs = plt.subplots(2, 1,
+        figsize=(7,7),
+        gridspec_kw={"height_ratios":[3,1]}
+        )
+    fig.subplots_adjust(hspace=0.1)
+    #
+    ax = axs[0]
+    ax.set_title("Normalized distribution of difference to central data predictions")
+    xlim = (-5, 5)
+    ax.set_xlim(xlim)
+    x = np.linspace(*xlim, 100)
+    values, bins, patches = ax.hist(
+        scaled_diffs, 
+        bins=50, 
+        density=True, 
+        label="Central prediction distribution"
+    )
+    bins_center = (bins[1:] + bins[:-1]) / 2
+    ax.plot(
+        x,
+        scipy.stats.norm.pdf(x),
+        "k",
+        linestyle="--",
+        label="Reference: $\mu=$%.2f $\sigma=$%.2f" % (0, 1),
+    )
+    (mu, sigma) = scipy.stats.norm.fit(scaled_diffs)
+    ax.plot(
+        x,
+        scipy.stats.norm.pdf(x, mu, sigma),
+        "k",
+        label=r"Fit: $\mu=$%.2f $\sigma=$%.2f" % (mu, sigma),
+    )
+    ax.legend()
+    #
+    ax = axs[1]
+    import scipy.stats as st
+    st.probplot(scaled_diffs, fit=True, plot=ax)
+    ax.set_title("")
+    ax.set_ylabel("")
+    return fig

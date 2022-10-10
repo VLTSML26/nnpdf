@@ -54,12 +54,14 @@ The expected value for this indicator is calculated from the measured value of $
 
 {@ on_newdata plot_xi_behavior @}
 
-Distance from input-pdf in pdf space
+Distances
 ------------------------------------
 
-{@ plot_pdf_central_diff_histogram @}
+We finally display the distribution of distances from the underlying truth. This is done both in pdf and data space. Deviations from gaussianity can be quickly seen with a quantile-quantile plot.
+### Distance from input-pdf in pdf space
 
-Distance from central predictions in data space
------------------------------------------------
+{@ plot_pdf_central_diff_histogram_and_qq @}
 
-{@ on_newdata plot_data_central_diff_histogram @}
+### Distance from central predictions in data space
+
+{@ on_newdata plot_data_central_diff_histogram_and_qq @}
