@@ -47,7 +47,7 @@ For a more detailed discussion of $R_\text{bv}$ for single datasets or experimen
 
 We show the distribution of bootstrap samples of $\xi_{1\sigma}$ for the entire dataset, alongside its fitted corresponding scaled normal distribution for comparison.
 
-{@ plot_total_xi_bootstrap_distribution @}
+{@ on_newdata plot_total_xi_bootstrap_distribution @}
 
 Below is shown the trend of the total bootstrapped value of $\xi_{1\sigma}$.
 The expected value for this indicator is calculated from the measured value of $R_\text{bv}$: this predicted value is based on the assumption that the difference between replica and central prediction and the difference between central prediction and underlying prediction are both gaussians centered on zero.
@@ -58,6 +58,7 @@ Distances
 ------------------------------------
 
 We finally display the distribution of distances from the underlying truth. This is done both in pdf and data space. Deviations from gaussianity can be quickly seen with a quantile-quantile plot.
+
 ### Distance from input-pdf in pdf space
 
 {@ plot_pdf_central_diff_histogram_and_qq @}
