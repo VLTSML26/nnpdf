@@ -105,6 +105,7 @@ def make_replica(
     replica_mcseed,  
     dataset_inputs_sampling_covmat, 
     sep_mult, 
+    shifted_datasets,
     genrep=True 
     ):
     """Function that takes in a list of :py:class:`validphys.coredata.CommonData`
@@ -175,6 +176,14 @@ def make_replica(
         # copy here to avoid mutating the central values.
         pseudodata = cd.central_values.to_numpy()
 
+        for sh in shifted_datasets:
+            if cd.setname == sh['name']:
+                print('current dataset: ', cd.setname)
+                print('is in shifted dataset as', sh['name'])
+                print('with shift equal to ', sh['shift'])
+                print('')
+                pseudodata *= sh['shift']
+        
         pseudodatas.append(pseudodata)
         #Separation of multiplicative errors. If separate_multiplicative is True also the exp_covmat is produced 
         # without multiplicative errors
