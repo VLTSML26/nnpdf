@@ -11,7 +11,7 @@ Below is shown the distribution of bootstrap samples of $\xi_{1\sigma}$ alongsid
 
 {@ on_newdata plot_experiments_xi_bootstrap_distribution @}
 
-### Bias and variance table
+### Experiments table
 
 This table provides informations about $\xi_{1\sigma}$ for single experiments in the out-of-sample datasets considered.
 

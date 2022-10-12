@@ -3,8 +3,8 @@
 Summary 
 -------
 
-This report provides statistical indicators in order to determine the success of new closure inconsistency-tests.
-The following table aims at showing all the features of the test by reading the Validphys runcard.
+This report provides statistical indicators in order to determine the success of new closure tests.
+The following table aims at showing all the features of the test by reading the test runcard.
 
 {@ closuretest_summary @}
 
@@ -26,7 +26,7 @@ Closure test indicators
 
 In this section we provide results on the main closure-test indicators: $R_\text{bv}$ and $\xi_{1\sigma}$. Here, the user will find informations about their total value and can navigate into seperate sections for single experiment's results.
 
-### Bias-to-variance ratio
+### Total bias-to-variance ratio
 
 We show the normalized distributions of total bias and variance for this closure test. Different counts in one bin indicate the presence of non-gaussianity sources: should it happen here, plots for single experiments may provide more details.
 
@@ -41,9 +41,11 @@ The user may want to check if stability is reached and, if not, gather more data
 
 {@ on_newdata plot_sqrt_ratio_behavior @}
 
+### $R_\text{bv}$ per dataset
+
 For a more detailed discussion of $R_\text{bv}$ for single datasets or experiments, please refer to [this]({@ plot_biasvariance_report report@}) link.
 
-### Quantile indicator
+### Total 1-sigma indicator
 
 We show the distribution of bootstrap samples of $\xi_{1\sigma}$ for the entire dataset, alongside its fitted corresponding scaled normal distribution for comparison.
 
@@ -53,6 +55,10 @@ Below is shown the trend of the total bootstrapped value of $\xi_{1\sigma}$.
 The expected value for this indicator is calculated from the measured value of $R_\text{bv}$: this predicted value is based on the assumption that the difference between replica and central prediction and the difference between central prediction and underlying prediction are both gaussians centered on zero.
 
 {@ on_newdata plot_xi_behavior @}
+
+### $\xi_{1\sigma}$ per dataset
+
+[Here]({@ plot_xi_report report@}) the user can find all the informations about the quantile indicator for single experiments.
 
 Distances
 ------------------------------------

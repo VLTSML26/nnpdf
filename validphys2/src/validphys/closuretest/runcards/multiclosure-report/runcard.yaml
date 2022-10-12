@@ -118,6 +118,10 @@ plot_biasvariance_report:
     meta: Null
     template: biasvariance.md
 
+plot_xi_report:
+    meta: Null
+    template: xi.md
+
 plot_replicas_report:
     meta: Null
     template: plotreplicas.md
