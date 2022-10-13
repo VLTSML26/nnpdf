@@ -6,39 +6,38 @@
 #
 
 # reference fit
-fit: 220807-sv-001
+fit: level2base-001
 
 # all fits
 fits:
-    - 220807-sv-001
-    - 220807-sv-002
-    - 220807-sv-003
-    - 220807-sv-004
-    - 220807-sv-005
-    - 220807-sv-006
-    - 220807-sv-007
-    - 220807-sv-008
-    - 220807-sv-009
-    - 220807-sv-010
-    - 220807-sv-011
-    - 220807-sv-012
-    - 220807-sv-013
-    - 220807-sv-014
-    - 220807-sv-015
-    - 220807-sv-016
-    - 220807-sv-017
-    - 220807-sv-018
-    - 220807-sv-019
-    - 220807-sv-020
-    - 220807-sv-021
-    - 220807-sv-022
-    - 220807-sv-024
-    - 220809-sv-001
-    - 220805-sv-001
+    - level2base-001
+    - level2base-002
+    - level2base-003
+    - level2base-004
+    - level2base-005
+    - level2base-006
+    - level2base-007
+    - level2base-008
+    - level2base-009
+    - level2base-010
+    - level2base-011
+    - level2base-012
+    - level2base-013
+    - level2base-014
+    - level2base-015
+    - level2base-016
+    - level2base-017
+    - level2base-018
+    - level2base-019
+    - level2base-020
+    - level2base-021
+    - level2base-022
+    - level2base-023
+    - level2base-024
+    - level2base-025
 
 # pdfs declaration
 t0pdfset: 220426-sv-003_fakepdf
-fakepdf: 220426-sv-003_fakepdf
 pdfs:
     - NNPDF40_nnlo_as_01180
     - 220426-sv-003_fakepdf
@@ -92,12 +91,20 @@ Q: 1.61
 metadata_group: experiment
 use_cuts: internal
 use_t0: True
+genrep: true
+use_sameseed: False
 
 # closuretest parameters
-genrep: true
-manipulate_eigenvalue: true
-fakenoise: true
-use_sameseed: False
+closuretest:
+    from_: fit
+fakepdf:
+    from_: closuretest
+thcovmat_fraction:
+    from_: closuretest
+manipulate_eigenvalue:
+    from_: closuretest
+fakenoise: 
+    from_: closuretest
 
 # plotting parameters
 bases:
