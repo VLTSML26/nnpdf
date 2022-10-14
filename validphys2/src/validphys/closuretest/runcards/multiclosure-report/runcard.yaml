@@ -2,39 +2,43 @@
 # New runcard for multiclosure-test reporting
 # Author: Samuele Voltan
 # Last updated: October 2022
-# Please remember to change closure test parameters
+# Please remember to check the following parameters
+# 1) fits
+# 2) new datasets (different when th 163 is used)
+# 3) theory id (163 with thcovmat)
+# 4) manipulate_eigenvalue and thcovmat_fraction flags
 #
 
 # reference fit
-fit: level2base-001
+fit: thcovbase-001
 
 # all fits
 fits:
-    - level2base-001
-    - level2base-002
-    - level2base-003
-    - level2base-004
-    - level2base-005
-    - level2base-006
-    - level2base-007
-    - level2base-008
-    - level2base-009
-    - level2base-010
-    - level2base-011
-    - level2base-012
-    - level2base-013
-    - level2base-014
-    - level2base-015
-    - level2base-016
-    - level2base-017
-    - level2base-018
-    - level2base-019
-    - level2base-020
-    - level2base-021
-    - level2base-022
-    - level2base-023
-    - level2base-024
-    - level2base-025
+    - thcovbase-001
+    - thcovbase-002
+    - thcovbase-003
+    - thcovbase-004
+    - thcovbase-005
+    - thcovbase-006
+    - thcovbase-007
+    - thcovbase-008
+    - thcovbase-009
+    - thcovbase-010
+    - thcovbase-011
+    - thcovbase-012
+    - thcovbase-013
+    - thcovbase-014
+    - thcovbase-015
+    - thcovbase-016
+    - thcovbase-017
+    - thcovbase-018
+    - thcovbase-019
+    - thcovbase-020
+    - thcovbase-021
+    - thcovbase-022
+    - thcovbase-023
+    - thcovbase-024
+    - thcovbase-025
 
 # pdfs declaration
 t0pdfset: 220426-sv-003_fakepdf
@@ -86,7 +90,7 @@ on_samedata:
 # config parameters
 q2min: 3.49
 w2min: 12.5
-theoryid: 200
+theoryid: 163 # NOTE: remember to check this
 Q: 1.61
 metadata_group: experiment
 use_cuts: internal
@@ -95,14 +99,16 @@ genrep: true
 use_sameseed: False
 
 # closuretest parameters
+# TODO: find a way to parse from closuretest namespace even if there is no key
+# there (set to None by default somewhere)
 closuretest:
     from_: fit
 fakepdf:
     from_: closuretest
-thcovmat_fraction:
-    from_: closuretest
-manipulate_eigenvalue:
-    from_: closuretest
+thcovmat_fraction: None # for now by hand
+    # from_: closuretest
+manipulate_eigenvalue: None # for now by hand
+    # from_: closuretest
 fakenoise: 
     from_: closuretest
 
