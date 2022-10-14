@@ -574,9 +574,27 @@ def sqrt_covmat(covariance_matrix):
                          f"instead it has dimensions {dimensions[0]} x "
                          f"{dimensions[1]}")
 
-    sqrt_diags = np.sqrt(np.diag(covariance_matrix))
-    correlation_matrix = covariance_matrix / sqrt_diags[:, np.newaxis] / sqrt_diags
-    decomp = la.cholesky(correlation_matrix)
+    # TODO: this is horrible and probably needs to be moved into a separate function
+    # NOTE: two issues below
+    # 1st -> sqrt_diags has some zeros and cannot divide by them (solved in 1st except)
+    # 2nd -> cholesky fails because of singular eigenvalues of matrix (solved in 2nd except)
+    try:
+        sqrt_diags = np.sqrt(np.diag(covariance_matrix))
+        correlation_matrix = covariance_matrix / sqrt_diags[:, np.newaxis] / sqrt_diags
+        decomp = la.cholesky(correlation_matrix)
+    except:
+        sqrt_diags = np.sqrt(np.diag(covariance_matrix))
+        sqrt_diags[np.argwhere(sqrt_diags == 0)] = 1e-3 * np.min(
+            sqrt_diags[sqrt_diags != 0]
+        )
+        correlation_matrix = covariance_matrix / sqrt_diags[:, np.newaxis] / sqrt_diags
+        try:
+            decomp = la.cholesky(correlation_matrix)
+        except:
+            eigval, eigvec = la.eig(correlation_matrix)
+            eigval[np.argwhere(eigval == 0)] = np.min(eigval[eigval != 0]) * 1e-3
+            reconstructed_correlation_matrix = np.dot(eigvec * eigval, eigvec.conj().T)
+            decomp = la.cholesky(reconstructed_correlation_matrix)
     sqrt_matrix = (decomp * sqrt_diags).T
     return sqrt_matrix
 
