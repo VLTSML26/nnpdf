@@ -1599,6 +1599,7 @@ class CoreConfig(configparser.Config):
 
     def produce_processed_data_grouping(
         self, 
+        manipulate_eigenvalue=False,
         use_thcovmat_in_fitting=False, 
         use_thcovmat_in_sampling=False,
         data_grouping=None,
@@ -1618,7 +1619,7 @@ class CoreConfig(configparser.Config):
         if data_grouping is None:
             # fallback to old default behaviour, but still record to lockfile
             data_grouping = self.parse_data_grouping("standard_report")
-            if use_thcovmat_in_fitting or use_thcovmat_in_sampling:
+            if use_thcovmat_in_fitting or use_thcovmat_in_sampling or manipulate_eigenvalue:
                 data_grouping = self.parse_data_grouping("thcovmat_fit")
         if data_grouping_recorded_spec_ is not None:
             return data_grouping_recorded_spec_[data_grouping]
@@ -1688,6 +1689,9 @@ class CoreConfig(configparser.Config):
 
     def produce_group_dataset_inputs_by_experiment(self, data_input):
         return self.produce_group_dataset_inputs_by_metadata(data_input, "experiment")
+
+    def produce_group_dataset_inputs_by_all(self, data_input):
+        return self.produce_group_dataset_inputs_by_metadata(data_input, "ALL")
 
     def produce_group_dataset_inputs_by_process(self, data_input):
         return self.produce_group_dataset_inputs_by_metadata(
