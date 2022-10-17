@@ -111,7 +111,7 @@ def _make_replica(
     dataset_inputs_sampling_covmat, 
     sep_mult, 
     genrep=True 
-    ):
+):
     """Function that takes in a list of :py:class:`validphys.coredata.CommonData`
     objects and returns a pseudodata replica accounting for
     possible correlations between systematic uncertainties.
@@ -239,25 +239,21 @@ def _make_replica_manip(
     replica_mcseed,  
     dataset_inputs_sampling_covmat, 
     sep_mult, 
+    fit,
+    replica,
     genrep=True 
-    ):
+):
     """Like _make_replica but with manipulation of the covmat.
     """
     if not genrep:
         return np.concatenate([cd.central_values for cd in groups_dataset_inputs_loaded_cd_with_cuts])
 
-    # Seed the numpy RNG with the seed and the name of the datasets in this run
+    # seed the numpy RNG with the seed and the name of the datasets in this run
     name_salt = "-".join(i.setname for i in groups_dataset_inputs_loaded_cd_with_cuts)
     name_seed = int(hashlib.sha256(name_salt.encode()).hexdigest(), 16) % 10 ** 8
     rng = np.random.default_rng(seed=replica_mcseed+name_seed)
 
-    #construct covmat
-    covmat = dataset_inputs_sampling_covmat
-    log.info('covmat shape: %s', covmat.shape)
-    eigval, eigvect = la.eig(covmat)
-    eigval[np.argmax(eigval)] = np.min(eigval) # try also smaller eigs
-
-    #Loading the data
+    # loading the data
     pseudodatas = []
     check_positive_masks = []
     nonspecial_mult = []
@@ -281,6 +277,19 @@ def _make_replica_manip(
             check_positive_masks.append(np.zeros_like(pseudodata, dtype=bool))
         else:
             check_positive_masks.append(np.ones_like(pseudodata, dtype=bool))
+
+    # constructing the covmat
+    covmat = dataset_inputs_sampling_covmat
+    eigval, eigvect = la.eig(covmat)
+
+    # manipulating covmat (kill eigenvalue)
+    eigval[np.argmax(eigval)] = np.min(eigval) / 100
+
+    # save reconstructed covmat (only once)
+    if replica == 1:
+        reconstructed_covmat = np.dot(eigvect * eigval, eigvect.conj().T)
+        np.savetxt(str(fit) + "/tables/manipulated_covmat.dat", reconstructed_covmat.real)
+
     #concatenating special multiplicative errors, pseudodatas and positive mask 
     if sep_mult:
         special_mult_errors = pd.concat(special_mult, axis=0, sort=True).fillna(0).to_numpy()
