@@ -314,6 +314,10 @@ experiments_covmat_collection = collect(
     "dataset_inputs_covariance_matrix", ("group_dataset_inputs_by_experiment",)
 )
 
+experiments_manip_collection = collect(
+    "dataset_inputs_sampling_covmat_manipulated_and_reconstructed",
+    ("group_dataset_inputs_by_experiment",)
+)
 
 def experiments_covmat_no_table(
     experiments_data, experiments_index, experiments_covmat_collection
@@ -330,6 +334,13 @@ def experiments_covmat_no_table(
         name = experiment.name
         df.loc[[name], [name]] = experiment_covmat
     return df
+
+def experiments_covmat_manipulated_no_table(
+    experiments_data, experiments_index, experiments_manip_collection
+):
+    return experiments_covmat_no_table(
+        experiments_data, experiments_index, experiments_manip_collection
+    )
 
 
 def relabel_experiments_to_groups(input_covmat, groups_index):
@@ -371,9 +382,16 @@ def groups_covmat(groups_covmat_no_table):
 def procs_covmat_no_table(experiments_covmat_no_table, procs_index):
     return relabel_experiments_to_groups(experiments_covmat_no_table, procs_index)
 
+def procs_manip_covmat_no_table(experiments_covmat_manipulated_no_table, procs_index):
+    return relabel_experiments_to_groups(experiments_covmat_manipulated_no_table, procs_index)
+
 @table
 def procs_covmat(procs_covmat_no_table):
     return procs_covmat_no_table
+
+@table
+def procs_manip_covmat(procs_manip_covmat_no_table):
+    return procs_manip_covmat_no_table
 
 experiments_sqrt_covmat = collect(
     "dataset_inputs_sqrt_covmat", ("group_dataset_inputs_by_experiment",)
