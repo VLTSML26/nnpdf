@@ -767,6 +767,27 @@ class CoreConfig(configparser.Config):
                 else:
                     return covmats.dataset_inputs_exp_covmat
 
+    @configparser.explicit_node
+    def produce_dataset_inputs_sampling_covmat_eigs(
+        self,
+    ):
+        from validphys import covmats
+        return covmats.sampling_covmat_eigs
+
+    @configparser.explicit_node
+    def produce_dataset_inputs_sampling_covmat_eigs_manipulated(
+        self,
+    ):
+        from validphys import covmats
+        return covmats.manipulate_sampling_covmat_eigs
+
+    @configparser.explicit_node
+    def produce_dataset_inputs_sampling_covmat_manipulated_and_reconstructed(
+        self,
+    ):
+        from validphys import covmats
+        return covmats.reconstruct_manipulated_covmat
+
     def produce_loaded_theory_covmat(
         self,
         output_path,

@@ -237,10 +237,8 @@ def _make_replica(
 def _make_replica_manip(
     groups_dataset_inputs_loaded_cd_with_cuts, 
     replica_mcseed,  
-    dataset_inputs_sampling_covmat, 
+    dataset_inputs_sampling_covmat_eigs_manipulated,
     sep_mult, 
-    fit,
-    replica,
     genrep=True 
 ):
     """Like _make_replica but with manipulation of the covmat.
@@ -278,17 +276,8 @@ def _make_replica_manip(
         else:
             check_positive_masks.append(np.ones_like(pseudodata, dtype=bool))
 
-    # constructing the covmat
-    covmat = dataset_inputs_sampling_covmat
-    eigval, eigvect = la.eig(covmat)
-
-    # manipulating covmat (kill eigenvalue)
-    eigval[np.argmax(eigval)] = np.min(eigval) / 100
-
-    # save reconstructed covmat (only once)
-    if replica == 1:
-        reconstructed_covmat = np.dot(eigvect * eigval, eigvect.conj().T)
-        np.savetxt(str(fit) + "/tables/manipulated_covmat.dat", reconstructed_covmat.real)
+    # getting covmat eigvals and eigvect (no more need for covmat itself here)
+    eigval, eigvect = dataset_inputs_sampling_covmat_eigs_manipulated
 
     #concatenating special multiplicative errors, pseudodatas and positive mask 
     if sep_mult:

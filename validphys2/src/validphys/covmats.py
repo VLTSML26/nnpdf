@@ -787,6 +787,28 @@ def covmat_stability_characteristic(systematics_matrix_from_commondata):
     return 1 / s[-1]
 
 
+def sampling_covmat_eigs(
+    dataset_inputs_sampling_covmat
+):
+    covmat = dataset_inputs_sampling_covmat
+    return la.eig(covmat)
+
+
+def manipulate_sampling_covmat_eigs(
+    dataset_inputs_sampling_covmat_eigs
+):
+    eigval, eigvect = dataset_inputs_sampling_covmat_eigs
+    eigval[np.argmax(eigval)] = np.min(eigval) / 100
+    return eigval, eigvect
+
+
+def reconstruct_manipulated_covmat(
+    dataset_inputs_sampling_covmat_eigs_manipulated
+):
+    eigval, eigvect = dataset_inputs_sampling_covmat_eigs_manipulated
+    return np.dot(eigvect * eigval, eigvect.conj().T).real
+
+
 dataset_inputs_stability = collect('covmat_stability_characteristic', ('dataset_inputs',))
 
 
