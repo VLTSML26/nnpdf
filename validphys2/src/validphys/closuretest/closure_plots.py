@@ -141,3 +141,117 @@ def plot_diagonal_vs_manipulated(
     ax.legend(fontsize=20)
     ax.margins(x=0)
     return fig
+
+_procorder = ("DIS NC", "DIS CC", "DY", "JETS", "TOP")
+
+_dsorder = (
+    "BCDMSP",
+    "BCDMSD",
+    "SLACP",
+    "SLACD",
+    "NMC",
+    "NMCPD",
+    "HERAF2CHARM",
+    "HERACOMBNCEP460",
+    "HERACOMBNCEP575",
+    "HERACOMBNCEP820",
+    "HERACOMBNCEP920",
+    "HERACOMBNCEM",
+    "CHORUSNU",
+    "CHORUSNB",
+    "NTVNUDMN",
+    "NTVNBDMN",
+    "HERACOMBCCEP",
+    "HERACOMBCCEM",
+    "CDFZRAP",
+    "D0ZRAP",
+    "D0WEASY",
+    "D0WMASY",
+    "ATLASWZRAP36PB",
+    "ATLASZHIGHMASS49FB",
+    "ATLASLOMASSDY11EXT",
+    "ATLASWZRAP11",
+    "ATLASZPT8TEVMDIST",
+    "ATLASZPT8TEVYDIST",
+    "CMSWEASY840PB",
+    "CMSWMASY47FB",
+    "CMSWCHARMRAT",
+    "CMSDY2D11",
+    "CMSWMU8TEV",
+    "CMSWCHARMTOT",
+    "CMSZDIFF12",
+    "LHCBZ940PB",
+    "LHCBWZMU7TEV",
+    "LHCBWZMU8TEV",
+    "LHCBZEE2FB",
+    "ATLAS1JET11",
+    "CMSJETS11",
+    "CDFR2KT",
+    "ATLASTTBARTOT",
+    "ATLASTOPDIFF8TEVTRAPNORM",
+    "CMSTTBARTOT",
+    "CMSTOPDIFF8TEVTTRAPNORM",
+)
+
+
+def _get_key(element):
+    """The key used to sort covariance matrix dataframes according to
+    the ordering of processes and datasets specified in _procorder and
+    _dsorder."""
+    from math import inf
+    x1, y1, z1 = element
+    x2 = _procorder.index(x1) if x1 in _procorder else inf
+    y2 = _dsorder.index(y1) if y1 in _dsorder else inf
+    z2 = z1
+    newelement = (x2, y2, z2)
+    return newelement
+
+# NOTE: this is the same as in theorycovariance/output.py -> find a way to use that
+def plot_covmat_heatmap(covmat, title):
+    from matplotlib import cm, colors as mcolors
+    """Matrix plot of a covariance matrix."""
+    df = covmat
+    df.sort_index(0, inplace=True)
+    df.sort_index(1, inplace=True)
+    oldindex = df.index.tolist()
+    newindex = sorted(oldindex, key=_get_key)
+    # reindex index
+    newdf = df.reindex(newindex)
+    # reindex columns by transposing, reindexing, then transposing back
+    newdf = (newdf.T.reindex(newindex)).T
+    matrix = newdf.values
+    fig, ax = plt.subplots(figsize=(15, 15))
+    matrixplot = ax.matshow(
+        100 * matrix,
+        cmap=cm.Spectral_r,
+        norm=mcolors.SymLogNorm(
+            linthresh=0.01,
+            linscale=10,
+            vmin=-100 * matrix.max(),
+            vmax=100 * matrix.max(),
+        ),
+    )
+    cbar = fig.colorbar(matrixplot, fraction=0.046, pad=0.04)
+    cbar.set_label(label="% of data", fontsize=20)
+    cbar.ax.tick_params(labelsize=20)
+    ax.set_title(title, fontsize=25)
+    ticklocs, ticklabels, startlocs = matrix_plot_labels(newdf)
+    plt.xticks(ticklocs, ticklabels, rotation=30, ha="right", fontsize=20)
+    plt.gca().xaxis.tick_bottom()
+    plt.yticks(ticklocs, ticklabels, fontsize=20)
+    # Shift startlocs elements 0.5 to left so lines are between indexes
+    startlocs_lines = [x - 0.5 for x in startlocs]
+    ax.vlines(startlocs_lines, -0.5, len(matrix) - 0.5, linestyles="dashed")
+    ax.hlines(startlocs_lines, -0.5, len(matrix) - 0.5, linestyles="dashed")
+    ax.margins(x=0, y=0)
+    return fig
+
+@figure
+def plot_sampling_original_cov_heatmap(procs_sampling_covmat):
+    fig = plot_covmat_heatmap(procs_sampling_covmat, "Original Sampling Covmat")
+    return fig
+
+@figure
+def plot_sampling_manip_cov_heatmap(procs_sampling_covmat_manip):
+    fig = plot_covmat_heatmap(procs_sampling_covmat_manip, "Manipulated Sampling Covmat")
+    return fig

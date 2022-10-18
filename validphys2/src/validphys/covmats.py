@@ -798,15 +798,17 @@ def manipulate_sampling_covmat_eigs(
     dataset_inputs_sampling_covmat_eigs
 ):
     eigval, eigvect = dataset_inputs_sampling_covmat_eigs
-    eigval[np.argmax(eigval)] = np.min(eigval) / 100
-    return eigval, eigvect
+    manip_eigval = np.copy(eigval)
+    manip_eigval[np.argmax(manip_eigval)] = np.min(manip_eigval) / 100
+    return manip_eigval, eigvect
 
 
 def reconstruct_manipulated_covmat(
     dataset_inputs_sampling_covmat_eigs_manipulated
 ):
     eigval, eigvect = dataset_inputs_sampling_covmat_eigs_manipulated
-    return np.dot(eigvect * eigval, eigvect.conj().T).real
+    reconstructed = eigvect @ np.diag(eigval) @ eigvect.T
+    return reconstructed.real
 
 
 dataset_inputs_stability = collect('covmat_stability_characteristic', ('dataset_inputs',))
