@@ -874,3 +874,39 @@ def plot_bias_variance_distributions(
     ax.legend()
     ax.set_title("Total bias and variance distributions.")
     yield fig
+
+@table
+def closuretest_summary(
+    genrep,
+    fakepdf,
+    theoryid,
+    fakenoise,
+    thcovmat_fraction=None,
+    manipulate_eigenvalue=None,
+):
+    """
+    Table that summarizes the closure-test specifics, like its level and possible
+    covmat manipulations.
+
+    Note
+    ----
+    The user must adopt the new closure test runcard that reads some of the input
+    parameters from the fit runcard, or provide those parameters himself in the
+    report runcard.
+    """
+    level = 0
+    if fakenoise and not genrep:
+        level = 1
+    if fakenoise and genrep:
+        level = 2
+    if genrep and not fakenoise:
+        level = 'unknown'
+    summary = {
+        'Level': level,
+        'Theory ID': theoryid.id,
+        'Fake PDF': fakepdf,
+        'Manipulate Eigenvalue': manipulate_eigenvalue,
+        # 'Thcovmat Fraction': thcovmat_fraction,
+    }
+    df = pd.DataFrame.from_dict(summary, orient='index', columns=['Closure test summary'])
+    return df
