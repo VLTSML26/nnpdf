@@ -94,11 +94,14 @@ def diagonalize_sampling_covmat(
 
 
 def manipulate_sampling_covmat_eigs(
-    dataset_inputs_sampling_covmat_eigs
+    dataset_inputs_sampling_covmat_eigs,
+    num_turnoff
 ):
     eigval, eigvect = dataset_inputs_sampling_covmat_eigs
     manip_eigval = np.copy(eigval)
-    manip_eigval[np.argmax(manip_eigval)] = np.min(manip_eigval) / 100
+    minimum = np.min(manip_eigval) / 100
+    for _ in range(num_turnoff):
+        manip_eigval[np.argmax(manip_eigval)] = minimum
     return manip_eigval, eigvect
 
 

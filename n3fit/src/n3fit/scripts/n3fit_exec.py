@@ -156,10 +156,18 @@ class N3FitConfig(Config):
                 N3FIT_FIXED_CONFIG['theory_covmat_flag'] = True
             N3FIT_FIXED_CONFIG['use_user_uncertainties'] = thconfig.get('use_user_uncertainties', False) 
             N3FIT_FIXED_CONFIG['use_scalevar_uncertainties'] = thconfig.get('use_scalevar_uncertainties', True) 
-        #Closuretest flags
+        #Closuretest with inconsistent data flags
         N3FIT_FIXED_CONFIG['manipulate_eigenvalue'] = False
-        if (closureconfig:=file_content.get('closuretest')) is not None:
-            N3FIT_FIXED_CONFIG['manipulate_eigenvalue'] = closureconfig.get('manipulate_eigenvalue', False)
+        N3FIT_FIXED_CONFIG['num_turnoff'] = None
+        if (inconsistentdata:=file_content.get('closuretest').get('inconsistent_data')) is not None:
+            log.warning("Performing closuretest with inconsistent data")
+            N3FIT_FIXED_CONFIG['num_turnoff'] = inconsistentdata.get('num_turnoff', None)
+            if N3FIT_FIXED_CONFIG['num_turnoff'] is not None:
+                N3FIT_FIXED_CONFIG['manipulate_eigenvalue'] = True
+                log.warning(
+                    "Changing %s eigenvalue(s) in the experimental covariance matrix",
+                    N3FIT_FIXED_CONFIG['num_turnoff']
+                )
         #Sampling flags
         if (sam_t0:=file_content.get('sampling')) is not None:
             N3FIT_FIXED_CONFIG['use_t0_sampling'] = sam_t0.get('use_t0', False) 

@@ -788,14 +788,17 @@ class CoreConfig(configparser.Config):
         from validphys import covmats_utils
         return covmats_utils.reconstruct_manipulated_covmat
 
-    @configparser.explicit_node
+    # @configparser.explicit_node
     def produce_dataset_inputs_sampling_covmat_eigs_used(
-        self, manipulate_eigenvalue: bool = False
+        self, 
+        dataset_inputs_sampling_covmat_eigs_manipulated,
+        dataset_inputs_sampling_covmat_eigs,
+        manipulate_eigenvalue: bool = False
     ):
         if manipulate_eigenvalue:
-            return self.produce_dataset_inputs_sampling_covmat_eigs_manipulated
+            return dataset_inputs_sampling_covmat_eigs_manipulated
         else:
-            return self.produce_dataset_inputs_sampling_covmat_eigs
+            return dataset_inputs_sampling_covmat_eigs
 
     def produce_loaded_theory_covmat(
         self,
