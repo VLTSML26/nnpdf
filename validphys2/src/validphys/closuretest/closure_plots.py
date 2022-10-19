@@ -107,25 +107,28 @@ def matrix_plot_labels(df):
     return ticklocs, ticklabels, startlocs
 
 @figure
-def plot_diagonal_vs_manipulated(
-    procs_covmat,
-    procs_manip_covmat,
+def plot_diagonal_vs_manipulated_sampling_covmat(
+    procs_sampling_covmat,
+    procs_sampling_covmat_manip,
     procs_data_values,
 ):
     """Plot of sqrt(cov_ii)/|data_i| for cov = exp, theory, exp+theory"""
     import pandas as pd
     import numpy as np
     data = np.abs(procs_data_values)
-    plot_index = procs_covmat.index
-    sqrtdiags_manip = np.sqrt(np.diag(procs_manip_covmat)) / data
+    plot_index = procs_sampling_covmat.index
+    sqrtdiags_manip = np.sqrt(np.diag(procs_sampling_covmat_manip)) / data
     sqrtdiags_manip = pd.DataFrame(sqrtdiags_manip.values, index=plot_index)
     sqrtdiags_manip.sort_index(0, inplace=True)
     oldindex = sqrtdiags_manip.index.tolist()
-    sqrtdiags = np.sqrt(np.diag(procs_covmat)) / data
+    newindex = sorted(oldindex, key=_get_key)
+    sqrtdiags_manip = sqrtdiags_manip.reindex(newindex)
+    sqrtdiags = np.sqrt(np.diag(procs_sampling_covmat)) / data
     sqrtdiags = pd.DataFrame(sqrtdiags.values, index=plot_index)
     sqrtdiags.sort_index(0, inplace=True)
+    sqrtdiags = sqrtdiags.reindex(newindex)
     fig, ax = plt.subplots(figsize=(20, 10))
-    ax.plot(sqrtdiags_manip.values, ".", label="Manipulated", color="red")
+    ax.plot(sqrtdiags_manip.values, "*", label="Manipulated", color="red")
     ax.plot(sqrtdiags.values, ".", label="Original", color="blue")
     ticklocs, ticklabels, startlocs = matrix_plot_labels(sqrtdiags_manip)
     plt.xticks(ticklocs, ticklabels, rotation=45, fontsize=20)
@@ -135,7 +138,7 @@ def plot_diagonal_vs_manipulated(
     ax.yaxis.set_tick_params(labelsize=20)
     ax.set_ylim([0, 0.5])
     ax.set_title(
-        f"Square diagonal of covariance matrix before and after manipulation normalised to absolute value of data",
+        f"Square diagonal of sampling covariance matrix before and after manipulation (normalised to data)",
         fontsize=20,
     )
     ax.legend(fontsize=20)

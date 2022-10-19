@@ -881,8 +881,7 @@ def closuretest_summary(
     fakepdf,
     theoryid,
     fakenoise,
-    thcovmat_fraction=None,
-    manipulate_eigenvalue=None,
+    manipulate_eigenvalue: bool = False,
 ):
     """
     Table that summarizes the closure-test specifics, like its level and possible
@@ -906,7 +905,6 @@ def closuretest_summary(
         'Theory ID': theoryid.id,
         'Fake PDF': fakepdf,
         'Manipulate Eigenvalue': manipulate_eigenvalue,
-        # 'Thcovmat Fraction': thcovmat_fraction,
     }
     df = pd.DataFrame.from_dict(summary, orient='index', columns=['Closure test summary'])
     return df
