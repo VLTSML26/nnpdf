@@ -771,22 +771,31 @@ class CoreConfig(configparser.Config):
     def produce_dataset_inputs_sampling_covmat_eigs(
         self,
     ):
-        from validphys import covmats
-        return covmats.sampling_covmat_eigs
+        from validphys import covmats_utils
+        return covmats_utils.diagonalize_sampling_covmat
 
     @configparser.explicit_node
     def produce_dataset_inputs_sampling_covmat_eigs_manipulated(
         self,
     ):
-        from validphys import covmats
-        return covmats.manipulate_sampling_covmat_eigs
+        from validphys import covmats_utils
+        return covmats_utils.manipulate_sampling_covmat_eigs
 
     @configparser.explicit_node
     def produce_dataset_inputs_sampling_covmat_manipulated_and_reconstructed(
         self,
     ):
-        from validphys import covmats
-        return covmats.reconstruct_manipulated_covmat
+        from validphys import covmats_utils
+        return covmats_utils.reconstruct_manipulated_covmat
+
+    @configparser.explicit_node
+    def produce_dataset_inputs_sampling_covmat_eigs_used(
+        self, manipulate_eigenvalue: bool = False
+    ):
+        if manipulate_eigenvalue:
+            return self.produce_dataset_inputs_sampling_covmat_eigs_manipulated
+        else:
+            return self.produce_dataset_inputs_sampling_covmat_eigs
 
     def produce_loaded_theory_covmat(
         self,
@@ -894,15 +903,6 @@ class CoreConfig(configparser.Config):
             return covmats.pdferr_plus_dataset_inputs_covmat
         else:
             return covmats._dataset_inputs_covmat_t0_considered
-
-    @configparser.explicit_node
-    def produce_make_replica(self, manipulate_eigenvalue: bool = False):
-        from validphys import pseudodata
-        if manipulate_eigenvalue:
-            log.warning('Using manipulate_eigenvalue from runcard.')
-            return pseudodata._make_replica_manip
-        else:
-            return pseudodata._make_replica
     
     # TODO: Do this better and elsewhere
     @staticmethod

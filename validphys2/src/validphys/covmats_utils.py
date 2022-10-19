@@ -8,6 +8,7 @@ actions/providers.
 """
 import numpy as np
 import pandas as pd
+import scipy.linalg as la
 
 def systematics_matrix(stat_errors: np.array, sys_errors: pd.DataFrame):
     """Basic function to create a systematics matrix , :math:`A`, such that:
@@ -85,3 +86,25 @@ def construct_covmat(stat_errors: np.array, sys_errors: pd.DataFrame):
 
     corr_sys_mat = sys_errors.loc[:, ~is_uncorr].to_numpy()
     return np.diag(diagonal) + corr_sys_mat @ corr_sys_mat.T
+
+def diagonalize_sampling_covmat(
+    dataset_inputs_sampling_covmat
+):
+    return la.eig(dataset_inputs_sampling_covmat)
+
+
+def manipulate_sampling_covmat_eigs(
+    dataset_inputs_sampling_covmat_eigs
+):
+    eigval, eigvect = dataset_inputs_sampling_covmat_eigs
+    manip_eigval = np.copy(eigval)
+    manip_eigval[np.argmax(manip_eigval)] = np.min(manip_eigval) / 100
+    return manip_eigval, eigvect
+
+
+def reconstruct_manipulated_covmat(
+    dataset_inputs_sampling_covmat_eigs_manipulated
+):
+    eigval, eigvect = dataset_inputs_sampling_covmat_eigs_manipulated
+    reconstructed = eigvect @ np.diag(eigval) @ eigvect.T
+    return reconstructed.real
