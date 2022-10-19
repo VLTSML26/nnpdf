@@ -881,7 +881,7 @@ def closuretest_summary(
     fakepdf,
     theoryid,
     fakenoise,
-    manipulate_eigenvalue: bool = False,
+    num_turnoff=None
 ):
     """
     Table that summarizes the closure-test specifics, like its level and possible
@@ -904,7 +904,8 @@ def closuretest_summary(
         'Level': level,
         'Theory ID': theoryid.id,
         'Fake PDF': fakepdf,
-        'Manipulate Eigenvalue': manipulate_eigenvalue,
     }
+    if num_turnoff is not None:
+        summary['Eigenvalues turned off'] = num_turnoff
     df = pd.DataFrame.from_dict(summary, orient='index', columns=['Closure test summary'])
     return df
