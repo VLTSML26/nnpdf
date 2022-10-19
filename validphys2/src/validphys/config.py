@@ -4,6 +4,7 @@ Created on Wed Mar  9 15:43:10 2016
 
 @author: Zahari Kassabov
 """
+from json import load
 import logging
 import pathlib
 import functools
@@ -831,6 +832,20 @@ class CoreConfig(configparser.Config):
         tmp = theory_covmat.droplevel(0, axis=0).droplevel(0, axis=1)
         bb = [str(i) for i in data_input]
         return tmp.reindex(index=bb, columns=bb, level=0).values
+
+    def produce_theory_covmat_used(
+        self,
+        loaded_theory_covmat,
+        thcovmat_fraction=None
+    ):
+        """
+        Depending on some closuretest (inconsistent data) flag in the runcard,
+        returns the loaded theory covmat or a fraction of it.
+        """
+        if thcovmat_fraction is None:
+            return loaded_theory_covmat
+        else:
+            return thcovmat_fraction * loaded_theory_covmat
 
     @configparser.explicit_node
     def produce_covmat_t0_considered(self, use_t0: bool = False):
