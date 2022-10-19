@@ -156,6 +156,16 @@ class N3FitConfig(Config):
                 N3FIT_FIXED_CONFIG['theory_covmat_flag'] = True
             N3FIT_FIXED_CONFIG['use_user_uncertainties'] = thconfig.get('use_user_uncertainties', False) 
             N3FIT_FIXED_CONFIG['use_scalevar_uncertainties'] = thconfig.get('use_scalevar_uncertainties', True) 
+        #Closuretest with inconsistent data flags
+        N3FIT_FIXED_CONFIG['thcovmat_fraction'] = None
+        if (inconsistentdata:=file_content.get('closuretest').get('inconsistent_data')) is not None:
+            log.warning("Performing closuretest with inconsistent data")
+            N3FIT_FIXED_CONFIG['thcovmat_fraction'] = inconsistentdata.get('thcovmat_fraction', None)
+            if N3FIT_FIXED_CONFIG['thcovmat_fraction'] is not None:
+                log.warning(
+                    "Missing higher order uncertainties wrongly predicted by a factor %s",
+                    N3FIT_FIXED_CONFIG['thcovmat_fraction']
+                )
         #Sampling flags
         if (sam_t0:=file_content.get('sampling')) is not None:
             N3FIT_FIXED_CONFIG['use_t0_sampling'] = sam_t0.get('use_t0', False) 
