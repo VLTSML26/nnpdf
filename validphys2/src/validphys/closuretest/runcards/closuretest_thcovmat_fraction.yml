@@ -90,6 +90,9 @@ sampling:
   separate_multiplicative: false
 
 fitting:
+  seed: 19104
+  rngalgo: 0
+  savepseudodata: true
   fitbasis: EVOL
   basis:
   - {fl: sng, trainable: false, smallx: [1.046, 1.188], largex: [1.437, 2.716]}
