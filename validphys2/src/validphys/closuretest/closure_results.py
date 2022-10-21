@@ -394,3 +394,37 @@ fits_underlying_pdfs_summary = collect("fit_underlying_pdfs_summary", ("fits",))
 def summarise_closure_underlying_pdfs(fits_underlying_pdfs_summary):
     """Collects the underlying pdfs for all fits and concatenates them into a single table"""
     return pd.concat(fits_underlying_pdfs_summary, axis=1)
+
+@table
+def closuretest_summary(
+    genrep,
+    fakepdf,
+    theoryid,
+    fakenoise,
+    thcovmat_fraction=None
+):
+    """
+    Table that summarizes the closure-test specifics, like its level and possible
+    covmat manipulations.
+    Note
+    ----
+    The user must adopt the new closure test runcard that reads some of the input
+    parameters from the fit runcard, or provide those parameters himself in the
+    report runcard.
+    """
+    level = 0
+    if fakenoise and not genrep:
+        level = 1
+    if fakenoise and genrep:
+        level = 2
+    if genrep and not fakenoise:
+        level = 'unknown'
+    summary = {
+        'Level': level,
+        'Theory ID': theoryid.id,
+        'Fake PDF': fakepdf,
+    }
+    if thcovmat_fraction is not None:
+        summary['Fraction of thcovmat used'] = thcovmat_fraction
+    df = pd.DataFrame.from_dict(summary, orient='index', columns=['Closure test summary'])
+    return
