@@ -775,6 +775,13 @@ class CoreConfig(configparser.Config):
         return covmats_utils.diagonalize_sampling_covmat
 
     @configparser.explicit_node
+    def produce_dataset_inputs_fitting_covmat_eigs(
+        self,
+    ):
+        from validphys import covmats_utils
+        return covmats_utils.diagonalize_fitting_covmat
+
+    @configparser.explicit_node
     def produce_dataset_inputs_sampling_covmat_eigs_manipulated(
         self,
     ):
@@ -782,23 +789,64 @@ class CoreConfig(configparser.Config):
         return covmats_utils.manipulate_sampling_covmat_eigs
 
     @configparser.explicit_node
+    def produce_dataset_inputs_fitting_covmat_eigs_manipulated(
+        self,
+    ):
+        from validphys import covmats_utils
+        return covmats_utils.manipulate_fitting_covmat_eigs
+
+    @configparser.explicit_node
     def produce_dataset_inputs_sampling_covmat_manipulated_and_reconstructed(
         self,
     ):
         from validphys import covmats_utils
-        return covmats_utils.reconstruct_manipulated_covmat
+        return covmats_utils.reconstruct_manipulated_sampling_covmat
+    
+    @configparser.explicit_node
+    def produce_dataset_inputs_fitting_covmat_manipulated_and_reconstructed(
+        self,
+    ):
+        from validphys import covmats_utils
+        return covmats_utils.reconstruct_manipulated_fitting_covmat
 
-    # @configparser.explicit_node
     def produce_dataset_inputs_sampling_covmat_eigs_used(
         self, 
         dataset_inputs_sampling_covmat_eigs_manipulated,
         dataset_inputs_sampling_covmat_eigs,
+        inconsistent_experiment,
+        data,
         manipulate_eigenvalue: bool = False
     ):
-        if manipulate_eigenvalue:
+        if manipulate_eigenvalue and data.name == inconsistent_experiment:
             return dataset_inputs_sampling_covmat_eigs_manipulated
         else:
             return dataset_inputs_sampling_covmat_eigs
+    
+    def produce_dataset_inputs_sampling_covmat_used(
+        self,
+        dataset_inputs_sampling_covmat,
+        dataset_inputs_sampling_covmat_manipulated_and_reconstructed,
+        inconsistent_experiment,
+        data,
+        manipulate_eigenvalue: bool = False
+    ):
+        if manipulate_eigenvalue and data.name == inconsistent_experiment:
+            return dataset_inputs_sampling_covmat_manipulated_and_reconstructed
+        else:
+            return dataset_inputs_sampling_covmat
+
+    def produce_dataset_inputs_fitting_covmat_used(
+        self,
+        dataset_inputs_fitting_covmat,
+        dataset_inputs_fitting_covmat_manipulated_and_reconstructed,
+        inconsistent_experiment,
+        data,
+        manipulate_eigenvalue: bool = False
+    ):  
+        if manipulate_eigenvalue and data.name == inconsistent_experiment:
+            return dataset_inputs_fitting_covmat_manipulated_and_reconstructed
+        else:
+            return dataset_inputs_fitting_covmat
 
     def produce_loaded_theory_covmat(
         self,
@@ -1617,7 +1665,7 @@ class CoreConfig(configparser.Config):
         # somebody will want to add to this at some point e.g for th. uncertainties
         allowed = {
             "standard_report": "experiment",
-            "thcovmat_fit": "ALL"
+            "thcovmat_fit": "ALL",
         }
         return allowed[spec]
 
@@ -1643,14 +1691,14 @@ class CoreConfig(configparser.Config):
         if data_grouping is None:
             # fallback to old default behaviour, but still record to lockfile
             data_grouping = self.parse_data_grouping("standard_report")
-            if use_thcovmat_in_fitting or use_thcovmat_in_sampling or manipulate_eigenvalue:
+            if use_thcovmat_in_fitting or use_thcovmat_in_sampling:
                 data_grouping = self.parse_data_grouping("thcovmat_fit")
         if data_grouping_recorded_spec_ is not None:
             return data_grouping_recorded_spec_[data_grouping]
         return self.load_default_data_grouping(data_grouping)
 
     def produce_processed_metadata_group(
-        self, processed_data_grouping, metadata_group=None
+        self, processed_data_grouping, manipulate_eigenvalue, metadata_group=None
     ):
         """Expose the final data grouping result. Either metadata_group is
         specified by user, in which case uses `processed_data_grouping` which
