@@ -159,14 +159,18 @@ class N3FitConfig(Config):
         #Closuretest with inconsistent data flags
         N3FIT_FIXED_CONFIG['manipulate_eigenvalue'] = False
         N3FIT_FIXED_CONFIG['num_turnoff'] = None
+        N3FIT_FIXED_CONFIG['inconsistent_experiment'] = None
         if (inconsistentdata:=file_content.get('closuretest').get('inconsistent_data')) is not None:
             log.warning("Performing closuretest with inconsistent data")
             N3FIT_FIXED_CONFIG['num_turnoff'] = inconsistentdata.get('num_turnoff', None)
+            N3FIT_FIXED_CONFIG['inconsistent_experiment'] = inconsistentdata.get('inconsistent_experiment', None)
             if N3FIT_FIXED_CONFIG['num_turnoff'] is not None:
+                if N3FIT_FIXED_CONFIG['inconsistent_experiment'] is None:
+                    raise ConfigError("Please indicate the inconsistent experiment.")
                 N3FIT_FIXED_CONFIG['manipulate_eigenvalue'] = True
                 log.warning(
-                    "Changing %s eigenvalue(s) in the experimental covariance matrix",
-                    N3FIT_FIXED_CONFIG['num_turnoff']
+                    "Changing %s eigenvalue(s) in %s's covariance matrix",
+                    N3FIT_FIXED_CONFIG['num_turnoff'], N3FIT_FIXED_CONFIG['inconsistent_experiment']
                 )
         #Sampling flags
         if (sam_t0:=file_content.get('sampling')) is not None:
