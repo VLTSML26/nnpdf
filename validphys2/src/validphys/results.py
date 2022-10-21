@@ -323,6 +323,15 @@ experiments_sampling_covmat_manip_collection = collect(
     ("group_dataset_inputs_by_experiment",)
 )
 
+experiments_fitting_covmat_collection = collect(
+    "dataset_inputs_fitting_covmat", ("group_dataset_inputs_by_experiment",)
+)
+
+experiments_fitting_covmat_manip_collection = collect(
+    "dataset_inputs_fitting_covmat_manipulated_and_reconstructed",
+    ("group_dataset_inputs_by_experiment",)
+)
+
 def experiments_covmat_no_table(
     experiments_data, experiments_index, experiments_covmat_collection
 ):
@@ -353,6 +362,19 @@ def experiments_sampling_covmat_manip_no_table(
         experiments_data, experiments_index, experiments_sampling_covmat_manip_collection
     )
 
+def experiments_fitting_covmat_no_table(
+    experiments_data, experiments_index, experiments_fitting_covmat_collection
+):
+    return experiments_covmat_no_table(
+        experiments_data, experiments_index, experiments_fitting_covmat_collection
+    )
+
+def experiments_fitting_covmat_manip_no_table(
+    experiments_data, experiments_index, experiments_fitting_covmat_manip_collection
+):
+    return experiments_covmat_no_table(
+        experiments_data, experiments_index, experiments_fitting_covmat_manip_collection
+    )
 
 def relabel_experiments_to_groups(input_covmat, groups_index):
     """Takes a covmat grouped by experiments and relabels
@@ -399,6 +421,12 @@ def procs_sampling_covmat_no_table(experiments_sampling_covmat_no_table, procs_i
 def procs_sampling_covmat_manip_no_table(experiments_sampling_covmat_manip_no_table, procs_index):
     return relabel_experiments_to_groups(experiments_sampling_covmat_manip_no_table, procs_index)
 
+def procs_fitting_covmat_no_table(experiments_fitting_covmat_no_table, procs_index):
+    return relabel_experiments_to_groups(experiments_fitting_covmat_no_table, procs_index)
+
+def procs_fitting_covmat_manip_no_table(experiments_fitting_covmat_manip_no_table, procs_index):
+    return relabel_experiments_to_groups(experiments_fitting_covmat_manip_no_table, procs_index)
+    
 @table
 def procs_covmat(procs_covmat_no_table):
     return procs_covmat_no_table
@@ -410,6 +438,14 @@ def procs_sampling_covmat(procs_sampling_covmat_no_table):
 @table
 def procs_sampling_covmat_manip(procs_sampling_covmat_manip_no_table):
     return procs_sampling_covmat_manip_no_table
+
+@table
+def procs_fitting_covmat(procs_fitting_covmat_no_table):
+    return procs_fitting_covmat_no_table
+
+@table
+def procs_fitting_covmat_manip(procs_fitting_covmat_manip_no_table):
+    return procs_fitting_covmat_manip_no_table
 
 experiments_sqrt_covmat = collect(
     "dataset_inputs_sqrt_covmat", ("group_dataset_inputs_by_experiment",)

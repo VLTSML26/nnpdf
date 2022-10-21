@@ -145,6 +145,45 @@ def plot_diagonal_vs_manipulated_sampling_covmat(
     ax.margins(x=0)
     return fig
 
+@figure
+def plot_diagonal_vs_manipulated_fitting_covmat(
+    procs_fitting_covmat,
+    procs_fitting_covmat_manip,
+    procs_data_values,
+):
+    """Plot of sqrt(cov_ii)/|data_i| for cov = exp, theory, exp+theory"""
+    import pandas as pd
+    import numpy as np
+    data = np.abs(procs_data_values)
+    plot_index = procs_fitting_covmat.index
+    sqrtdiags_manip = np.sqrt(np.diag(procs_fitting_covmat_manip)) / data
+    sqrtdiags_manip = pd.DataFrame(sqrtdiags_manip.values, index=plot_index)
+    sqrtdiags_manip.sort_index(0, inplace=True)
+    oldindex = sqrtdiags_manip.index.tolist()
+    newindex = sorted(oldindex, key=_get_key)
+    sqrtdiags_manip = sqrtdiags_manip.reindex(newindex)
+    sqrtdiags = np.sqrt(np.diag(procs_fitting_covmat)) / data
+    sqrtdiags = pd.DataFrame(sqrtdiags.values, index=plot_index)
+    sqrtdiags.sort_index(0, inplace=True)
+    sqrtdiags = sqrtdiags.reindex(newindex)
+    fig, ax = plt.subplots(figsize=(20, 10))
+    ax.plot(sqrtdiags_manip.values, "*", label="Manipulated", color="red")
+    ax.plot(sqrtdiags.values, ".", label="Original", color="blue")
+    ticklocs, ticklabels, startlocs = matrix_plot_labels(sqrtdiags_manip)
+    plt.xticks(ticklocs, ticklabels, rotation=45, fontsize=20)
+    startlocs_lines = [x - 0.5 for x in startlocs]
+    ax.vlines(startlocs_lines, 0, len(data), linestyles="dashed")
+    ax.set_ylabel(r"$\frac{\sqrt{cov_{ii}}}{|D_i|}$", fontsize=30)
+    ax.yaxis.set_tick_params(labelsize=20)
+    ax.set_ylim([0, 0.5])
+    ax.set_title(
+        f"Square diagonal of fitting covariance matrix before and after manipulation (normalised to data)",
+        fontsize=20,
+    )
+    ax.legend(fontsize=20)
+    ax.margins(x=0)
+    return fig
+
 _procorder = ("DIS NC", "DIS CC", "DY", "JETS", "TOP")
 
 _dsorder = (
@@ -257,4 +296,19 @@ def plot_sampling_original_cov_heatmap(procs_sampling_covmat):
 @figure
 def plot_sampling_manip_cov_heatmap(procs_sampling_covmat_manip):
     fig = plot_covmat_heatmap(procs_sampling_covmat_manip, "Manipulated Sampling Covmat")
+    return fig
+
+@figure
+def plot_procs_covmat(procs_covmat):
+    fig = plot_covmat_heatmap(procs_covmat, "Procs covmat")
+    return fig
+
+@figure
+def plot_fitting_original_cov_heatmap(procs_fitting_covmat):
+    fig = plot_covmat_heatmap(procs_fitting_covmat, "Original fitting covmat")
+    return fig
+
+@figure
+def plot_fitting_manip_cov_heatmap(procs_fitting_covmat_manip):
+    fig = plot_covmat_heatmap(procs_fitting_covmat_manip, "Manipulated fitting covmat")
     return fig
