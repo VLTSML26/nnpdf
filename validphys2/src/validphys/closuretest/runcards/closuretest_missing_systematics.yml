@@ -1,0 +1,156 @@
+#
+# Closure fit runcard: inconsistent data branch.
+# Author: Samuele Voltan
+# Use on branch: closuretest-eigenchange
+# Last update: october 2022
+#
+
+description: "NNPDF4.0 closure fit with missing systematics"
+
+dataset_inputs:
+  - {dataset: NMCPD_dw_ite, frac: 0.75}
+  - {dataset: BCDMSD_dw_ite, frac: 0.75}
+  - {dataset: CHORUSNUPb_dw_ite, frac: 0.75}
+  - {dataset: CHORUSNBPb_dw_ite, frac: 0.75}
+  - {dataset: DYE605_dw_ite, frac: 0.75, cfac: [QCD]}
+  - {dataset: NTVNUDMNFe_dw_ite, frac: 0.75, cfac: [MAS]}
+  - {dataset: NTVNBDMNFe_dw_ite, frac: 0.75, cfac: [MAS]}
+  - {dataset: DYE886R_dw_ite, frac: 0.75}
+  - {dataset: SLACD_dw_ite, frac: 0.75}
+  - {dataset: NMC, frac: 0.75}
+  - {dataset: SLACP_dwsh, frac: 0.75}
+  - {dataset: BCDMSP_dwsh, frac: 0.75}
+  - {dataset: HERACOMBNCEM, frac: 0.75}
+  - {dataset: HERACOMBNCEP460, frac: 0.75}
+  - {dataset: HERACOMBNCEP575, frac: 0.75}
+  - {dataset: HERACOMBNCEP820, frac: 0.75}
+  - {dataset: HERACOMBNCEP920, frac: 0.75}
+  - {dataset: HERACOMBCCEM, frac: 0.75}
+  - {dataset: HERACOMBCCEP, frac: 0.75}
+  - {dataset: HERACOMB_SIGMARED_C, frac: 0.75}
+  - {dataset: HERACOMB_SIGMARED_B, frac: 0.75}
+  - {dataset: CDFZRAP, frac: 0.75, cfac: [QCD]}
+  - {dataset: D0ZRAP, frac: 0.75, cfac: [QCD]}
+  - {dataset: D0WEASY, frac: 0.75, cfac: [QCD]}
+  - {dataset: D0WMASY, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLASWZRAP36PB, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLASZHIGHMASS49FB, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLASLOMASSDY11EXT, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLASWZRAP11CC, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLASZPT8TEVMDIST, frac: 0.75, cfac: [QCD], sys: 10}
+  - {dataset: ATLASZPT8TEVYDIST, frac: 0.75, cfac: [QCD], sys: 10}
+  - {dataset: ATLASTTBARTOT, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLAS_TTB_DIFF_8TEV_LJ_TRAPNORM, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLAS1JET11_NEW_SCALE, frac: 0.75, cfac: [QCD], sys: DECORR}
+  - {dataset: CMSWEASY840PB, frac: 0.75, cfac: [QCD]}
+  - {dataset: CMSWMASY47FB, frac: 0.75, cfac: [QCD]}
+  - {dataset: CMSDY2D11, frac: 0.75, cfac: [QCD]}
+  - {dataset: CMSWMU8TEV, frac: 0.75, cfac: [QCD]}
+  - {dataset: CMSZDIFF12, frac: 0.75, cfac: [QCD, NRM], sys: 10}
+  - {dataset: CMSJETS11_NEW_SCALE, frac: 0.75, cfac: [QCD]}
+  - {dataset: CMSTTBARTOT, frac: 0.75, cfac: [QCD]}
+  - {dataset: CMSTOPDIFF8TEVTTRAPNORM, frac: 0.75, cfac: [QCD]}
+  - {dataset: LHCBZ940PB, frac: 0.75, cfac: [QCD]}
+  - {dataset: LHCBZEE2FB, frac: 0.75, cfac: [QCD]}
+  - {dataset: LHCBWZMU7TEV, frac: 0.75, cfac: [NRM, QCD]}
+  - {dataset: LHCBWZMU8TEV, frac: 0.75, cfac: [NRM, QCD]}
+
+closuretest:
+  filterseed: 27787
+  fakedata: True
+  fakepdf: 220426-sv-003_fakepdf
+  errorsize: 1.0
+  fakenoise: True
+  rancutprob: 1.0
+  rancutmethod: 0
+  rancuttrnval: false
+  printpdf4gen: false
+  inconsistent_data:
+    num_turnoff: 1
+    inconsistent_experiment: LHCb
+
+theory:
+  theoryid: 200
+
+datacuts:
+  t0pdfset: 220426-sv-003_fakepdf
+  q2min: 3.49
+  w2min: 12.5
+  combocuts: NNPDF31 # -----------------> TODO check this
+  jetptcut_tev: 0
+  jetptcut_lhc: 0
+  wptcut_lhc: 30.0
+  jetycut_tev: 1e30
+  jetycut_lhc: 1e30
+  dymasscut_min: 0
+  dymasscut_max: 1e30
+  jetcfactcut: 1e30
+
+sampling:
+  use_t0: false
+  separate_multiplicative: false
+
+fitting:
+  seed: 31595
+  rngalgo: 0
+  savepseudodata: true
+  fitbasis: EVOL
+  basis:
+  - {fl: sng, pos: false, trainable: false, mutsize: [15], mutprob: [0.05], smallx: [1.083, 1.12], largex: [1.468, 3.277]}
+  - {fl: g, pos: false, trainable: false, mutsize: [15], mutprob: [0.05], smallx: [0.8232, 1.065], largex: [2.263, 7.969]}
+  - {fl: v, pos: false, trainable: false, mutsize: [15], mutprob: [0.05], smallx: [0.5819, 0.7351], largex: [1.496, 3.975]}
+  - {fl: v3, pos: false, trainable: false, mutsize: [15], mutprob: [0.05], smallx: [-0.01663, 0.5046], largex: [1.748, 3.933]}
+  - {fl: v8, pos: false, trainable: false, mutsize: [15], mutprob: [0.05], smallx: [0.6181, 0.7835], largex: [1.483, 3.915]}
+  - {fl: t3, pos: false, trainable: false, mutsize: [15], mutprob: [0.05], smallx: [-0.4284, 0.8596], largex: [1.765, 3.921]}
+  - {fl: t8, pos: false, trainable: false, mutsize: [15], mutprob: [0.05], smallx: [0.7236, 1.0], largex: [1.516, 3.649]}
+  - {fl: t15, pos: false, trainable: false, mutsize: [15], mutprob: [0.05], smallx: [1.014, 1.137], largex: [1.43, 3.752]}
+
+trvlseed: 1727532335
+nnseed: 1737785873
+mcseed: 2123509817
+genrep: true
+
+parameters:
+  nodes_per_layer: [25, 20, 8]
+  activation_per_layer: [tanh, tanh, linear]
+  initializer: glorot_normal
+  optimizer:
+    clipnorm: 6.073e-6
+    learning_rate: 2.621e-3
+    optimizer_name: Nadam
+  epochs: 17000
+  positivity:
+    initial: 184.8
+    multiplier:
+  integrability:
+    initial: 10
+    multiplier:
+  stopping_patience: 0.1
+  layer_type: dense
+  dropout: 0.0
+  threshold_chi2: 3.5
+
+positivity:
+  posdatasets:
+  - {dataset: POSF2U,   maxlambda: 1e6}
+  - {dataset: POSF2DW,  maxlambda: 1e6}
+  - {dataset: POSF2S,   maxlambda: 1e6}
+  - {dataset: POSFLL,   maxlambda: 1e6}
+  - {dataset: POSDYU,   maxlambda: 1e10}
+  - {dataset: POSDYD,   maxlambda: 1e10}
+  - {dataset: POSDYS,   maxlambda: 1e10}
+  - {dataset: POSF2C,   maxlambda: 1e6}
+  - {dataset: POSXUQ,   maxlambda: 1e6}
+  - {dataset: POSXUB,   maxlambda: 1e6}
+  - {dataset: POSXDQ,   maxlambda: 1e6}
+  - {dataset: POSXDB,   maxlambda: 1e6}
+  - {dataset: POSXSQ,   maxlambda: 1e6}
+  - {dataset: POSXSB,   maxlambda: 1e6}
+  - {dataset: POSXGL,   maxlambda: 1e6}
+
+integrability:
+  integdatasets:
+  - {dataset: INTEGXT8, maxlambda: 1e2}
+  - {dataset: INTEGXT3, maxlambda: 1e2}
+
+debug: false
