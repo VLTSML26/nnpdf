@@ -27,7 +27,7 @@ meta:
     title: Closuretest missing sys covmats
     keywords: [closuretest, inconsistency]
 
-template: report.md
+template: covmats_report.md
 
 actions_:
     - report(main=True)

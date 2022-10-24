@@ -822,6 +822,16 @@ class CoreConfig(configparser.Config):
         else:
             return dataset_inputs_sampling_covmat_eigs
     
+    # NOTE: this is for validphys. Otherwise it's already produced by n3fit configs
+    def produce_manipulate_eigenvalue(
+        self,
+        inconsistent_experiment
+    ):
+        if inconsistent_experiment is not None:
+            return True
+        else:
+            return False
+
     def produce_dataset_inputs_sampling_covmat_used(
         self,
         dataset_inputs_sampling_covmat,
