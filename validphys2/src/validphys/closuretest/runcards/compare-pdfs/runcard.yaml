@@ -1,0 +1,58 @@
+fit: missing-lhcb-sv-001
+
+fitsummary:
+  - fit: missing-lhcb-sv-001
+    closuretest:
+      from_: fit
+    genrep:
+      from_: fit
+    fakenoise:
+      from_: closuretest
+    fakepdf:
+      from_: closuretest
+    inconsistent_data:
+      from_: closuretest
+    num_turnoff:
+      from_: inconsistent_data
+    inconsistent_experiment:
+      from_: inconsistent_data
+    tablename: "Inconsistent fit"
+  - fit: level2base-001
+    closuretest:
+      from_: fit
+    genrep:
+      from_: fit
+    fakenoise:
+      from_: closuretest
+    fakepdf:
+      from_: closuretest
+    manipulate_eigenvalue: False
+    tablename: "Classical closure fit"
+
+pdf: 220426-sv-003_fakepdf
+pdfs:
+  - 220426-sv-003_fakepdf
+  - missing-lhcb-sv-001
+  - level2base-001
+Q: 1.651
+scales:
+  - Q: 1.651
+    scaletitle: "Q = 1.65 GeV"
+  - Q: 100
+    scaletitle: "Q = 100 GeV"
+t0pdfset: 220426-sv-003_fakepdf
+theoryid: 200
+use_cuts: internal
+
+dataset_inputs:
+  from_: fit
+
+meta:
+    author: Samuele Voltan
+    title: Closuretest missing systematics pdfs
+    keywords: [closuretest, inconsistency]
+
+template: compare_report.md
+
+actions_:
+    - report(main=True)
