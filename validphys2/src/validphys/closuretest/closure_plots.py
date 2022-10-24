@@ -5,7 +5,7 @@ Plots of statistical estimators for closure tests
 """
 import matplotlib.pyplot as plt
 
-from reportengine.figure import figure
+from reportengine.figure import figure, figuregen
 from validphys import plotutils
 
 
@@ -107,9 +107,9 @@ def matrix_plot_labels(df):
     return ticklocs, ticklabels, startlocs
 
 @figure
-def plot_diagonal_vs_manipulated_sampling_covmat(
+def plot_diagonal_vs_used_sampling_covmat(
     procs_sampling_covmat,
-    procs_sampling_covmat_manip,
+    procs_sampling_covmat_used,
     procs_data_values,
 ):
     """Plot of sqrt(cov_ii)/|data_i| for cov = exp, theory, exp+theory"""
@@ -117,7 +117,7 @@ def plot_diagonal_vs_manipulated_sampling_covmat(
     import numpy as np
     data = np.abs(procs_data_values)
     plot_index = procs_sampling_covmat.index
-    sqrtdiags_manip = np.sqrt(np.diag(procs_sampling_covmat_manip)) / data
+    sqrtdiags_manip = np.sqrt(np.diag(procs_sampling_covmat_used)) / data
     sqrtdiags_manip = pd.DataFrame(sqrtdiags_manip.values, index=plot_index)
     sqrtdiags_manip.sort_index(0, inplace=True)
     oldindex = sqrtdiags_manip.index.tolist()
@@ -138,17 +138,17 @@ def plot_diagonal_vs_manipulated_sampling_covmat(
     ax.yaxis.set_tick_params(labelsize=20)
     ax.set_ylim([0, 0.5])
     ax.set_title(
-        f"Square diagonal of sampling covariance matrix before and after manipulation (normalised to data)",
-        fontsize=20,
+        f"Square diagonal of original/used sampling covmat",
+        fontsize=25,
     )
     ax.legend(fontsize=20)
     ax.margins(x=0)
     return fig
 
 @figure
-def plot_diagonal_vs_manipulated_fitting_covmat(
+def plot_diagonal_vs_used_fitting_covmat(
     procs_fitting_covmat,
-    procs_fitting_covmat_manip,
+    procs_fitting_covmat_used,
     procs_data_values,
 ):
     """Plot of sqrt(cov_ii)/|data_i| for cov = exp, theory, exp+theory"""
@@ -156,7 +156,7 @@ def plot_diagonal_vs_manipulated_fitting_covmat(
     import numpy as np
     data = np.abs(procs_data_values)
     plot_index = procs_fitting_covmat.index
-    sqrtdiags_manip = np.sqrt(np.diag(procs_fitting_covmat_manip)) / data
+    sqrtdiags_manip = np.sqrt(np.diag(procs_fitting_covmat_used)) / data
     sqrtdiags_manip = pd.DataFrame(sqrtdiags_manip.values, index=plot_index)
     sqrtdiags_manip.sort_index(0, inplace=True)
     oldindex = sqrtdiags_manip.index.tolist()
@@ -177,8 +177,8 @@ def plot_diagonal_vs_manipulated_fitting_covmat(
     ax.yaxis.set_tick_params(labelsize=20)
     ax.set_ylim([0, 0.5])
     ax.set_title(
-        f"Square diagonal of fitting covariance matrix before and after manipulation (normalised to data)",
-        fontsize=20,
+        f"Square diagonal of original/used fitting covmat",
+        fontsize=25,
     )
     ax.legend(fontsize=20)
     ax.margins(x=0)
@@ -262,6 +262,7 @@ def plot_covmat_heatmap(covmat, title):
     # reindex columns by transposing, reindexing, then transposing back
     newdf = (newdf.T.reindex(newindex)).T
     matrix = newdf.values
+    import ipdb; ipdb.set_trace()
     fig, ax = plt.subplots(figsize=(15, 15))
     matrixplot = ax.matshow(
         100 * matrix,
@@ -294,8 +295,8 @@ def plot_sampling_original_cov_heatmap(procs_sampling_covmat):
     return fig
 
 @figure
-def plot_sampling_manip_cov_heatmap(procs_sampling_covmat_manip):
-    fig = plot_covmat_heatmap(procs_sampling_covmat_manip, "Manipulated Sampling Covmat")
+def plot_sampling_used_cov_heatmap(procs_sampling_covmat_used):
+    fig = plot_covmat_heatmap(procs_sampling_covmat_used, "Manipulated Sampling Covmat")
     return fig
 
 @figure
@@ -309,6 +310,44 @@ def plot_fitting_original_cov_heatmap(procs_fitting_covmat):
     return fig
 
 @figure
-def plot_fitting_manip_cov_heatmap(procs_fitting_covmat_manip):
-    fig = plot_covmat_heatmap(procs_fitting_covmat_manip, "Manipulated fitting covmat")
+def plot_fitting_used_cov_heatmap(procs_fitting_covmat_used):
+    fig = plot_covmat_heatmap(procs_fitting_covmat_used, "Manipulated fitting covmat")
     return fig
+
+@figure
+def plot_difference_original_used_sampling_covmat(procs_difference_original_used_sampling_covmat):
+    fig = plot_covmat_heatmap(procs_difference_original_used_sampling_covmat, "Difference original/manipulated samplig covmat.")
+    return fig
+
+@figure
+def plot_difference_original_used_fitting_covmat(procs_difference_original_used_fitting_covmat):
+    fig = plot_covmat_heatmap(procs_difference_original_used_fitting_covmat, "Difference original/manipulated fitting covmat.")
+    return fig
+
+@figuregen
+def plot_sampling_covmats_comparison(
+    procs_sampling_covmat_used,
+    procs_sampling_covmat
+):
+    figlist = [
+        plot_covmat_heatmap(procs_sampling_covmat, "Original Sampling Covmat"),
+        plot_covmat_heatmap(procs_sampling_covmat_used, "Manipulated Sampling Covmat")
+    ]
+    for f in figlist:
+        fig, _ = plt.subplots()
+        fig = f
+        yield fig
+
+@figuregen
+def plot_fitting_covmats_comparison(
+    procs_fitting_covmat_used,
+    procs_fitting_covmat
+):
+    figlist = [
+        plot_covmat_heatmap(procs_fitting_covmat, "Original Fitting Covmat"),
+        plot_covmat_heatmap(procs_fitting_covmat_used, "Manipulated Fitting Covmat")
+    ]
+    for f in figlist:
+        fig, _ = plt.subplots()
+        fig = f
+        yield fig
