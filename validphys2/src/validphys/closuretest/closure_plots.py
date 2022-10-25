@@ -262,7 +262,6 @@ def plot_covmat_heatmap(covmat, title):
     # reindex columns by transposing, reindexing, then transposing back
     newdf = (newdf.T.reindex(newindex)).T
     matrix = newdf.values
-    import ipdb; ipdb.set_trace()
     fig, ax = plt.subplots(figsize=(15, 15))
     matrixplot = ax.matshow(
         100 * matrix,

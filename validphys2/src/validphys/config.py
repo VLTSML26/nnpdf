@@ -815,32 +815,20 @@ class CoreConfig(configparser.Config):
         dataset_inputs_sampling_covmat_eigs,
         inconsistent_experiment,
         data,
-        manipulate_eigenvalue: bool = False
     ):
-        if manipulate_eigenvalue and data.name == inconsistent_experiment:
+        if inconsistent_experiment is not None and data.name == inconsistent_experiment:
             return dataset_inputs_sampling_covmat_eigs_manipulated
         else:
             return dataset_inputs_sampling_covmat_eigs
     
-    # NOTE: this is for validphys. Otherwise it's already produced by n3fit configs
-    def produce_manipulate_eigenvalue(
-        self,
-        inconsistent_experiment
-    ):
-        if inconsistent_experiment is not None:
-            return True
-        else:
-            return False
-
     def produce_dataset_inputs_sampling_covmat_used(
         self,
         dataset_inputs_sampling_covmat,
         dataset_inputs_sampling_covmat_manipulated_and_reconstructed,
         inconsistent_experiment,
         data,
-        manipulate_eigenvalue: bool = False
     ):
-        if manipulate_eigenvalue and data.name == inconsistent_experiment:
+        if inconsistent_experiment is not None and data.name == inconsistent_experiment:
             return dataset_inputs_sampling_covmat_manipulated_and_reconstructed
         else:
             return dataset_inputs_sampling_covmat
