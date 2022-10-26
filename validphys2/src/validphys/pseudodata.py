@@ -108,30 +108,26 @@ def read_replica_pseudodata(fit, context_index, replica):
 def make_replica(
     groups_dataset_inputs_loaded_cd_with_cuts, 
     replica_mcseed,  
-    dataset_inputs_sampling_covmat_eigs_used, 
+    dataset_inputs_sampling_covmat, 
     sep_mult, 
     genrep=True 
 ):
     """Function that takes in a list of :py:class:`validphys.coredata.CommonData`
-    objects and returns a pseudodata replica accounting for possible correlations
-    between systematic uncertainties. The function loops until positive definite
-    pseudodata is generated for any non-asymmetry datasets. In the case of an
-    asymmetry dataset negative values are permitted so the loop block executes 
-    only once.
-
+    objects and returns a pseudodata replica accounting for
+    possible correlations between systematic uncertainties.
+    The function loops until positive definite pseudodata is generated for any
+    non-asymmetry datasets. In the case of an asymmetry dataset negative values are
+    permitted so the loop block executes only once.
     Parameters
     ---------
     groups_dataset_inputs_loaded_cd_with_cuts: list[:py:class:`validphys.coredata.CommonData`]
         List of CommonData objects which stores information about systematic errors,
         their treatment and description, for each dataset.
-
     replica_mcseed: int, None
         Seed used to initialise the numpy random number generator. If ``None`` then a random seed is
         allocated using the default numpy behaviour.
-
-    dataset_inputs_sampling_covmat_eigs_used: tuple of np.arraya
-        Eigenvalues and eigenvectors of the covariance sampling matrix.
-
+    dataset_inputs_sampling_covmat: np.array
+        Full covmat to be used. It can be either only experimental or also theoretical.
     separate_multiplicative: bool
         Specifies whether computing the shifts with the full covmat or separating multiplicative
         errors (in the latter case remember to generate the covmat coherently)
@@ -144,7 +140,6 @@ def make_replica(
     pseudodata: np.array
         Numpy array which is N_dat (where N_dat is the combined number of data points after cuts)
         containing monte carlo samples of data centered around the data central value.
-
     Example
     -------
     >>> from validphys.api import API
@@ -163,12 +158,14 @@ def make_replica(
     if not genrep:
         return np.concatenate([cd.central_values for cd in groups_dataset_inputs_loaded_cd_with_cuts])
 
-    # seed the numpy RNG with the seed and the name of the datasets in this run
+    # Seed the numpy RNG with the seed and the name of the datasets in this run
     name_salt = "-".join(i.setname for i in groups_dataset_inputs_loaded_cd_with_cuts)
     name_seed = int(hashlib.sha256(name_salt.encode()).hexdigest(), 16) % 10 ** 8
     rng = np.random.default_rng(seed=replica_mcseed+name_seed)
-
-    # loading the data
+    #construct covmat
+    covmat = dataset_inputs_sampling_covmat
+    covmat_sqrt = sqrt_covmat(covmat)
+    #Loading the data
     pseudodatas = []
     check_positive_masks = []
     nonspecial_mult = []
@@ -192,10 +189,6 @@ def make_replica(
             check_positive_masks.append(np.zeros_like(pseudodata, dtype=bool))
         else:
             check_positive_masks.append(np.ones_like(pseudodata, dtype=bool))
-
-    # get eigenvalues and eigenvectors of sampling covmat
-    eigval, eigvect = dataset_inputs_sampling_covmat_eigs_used
-
     #concatenating special multiplicative errors, pseudodatas and positive mask 
     if sep_mult:
         special_mult_errors = pd.concat(special_mult, axis=0, sort=True).fillna(0).to_numpy()
@@ -219,7 +212,7 @@ def make_replica(
             mult_shifts.append(mult_shift)
             
         #If sep_mult is true then the multiplicative shifts were not included in the covmat
-        shifts = np.dot(eigvect * np.sqrt(eigval), rng.normal(size=eigval.shape))
+        shifts = covmat_sqrt @ rng.normal(size=covmat.shape[1])
         mult_part = 1.
         if sep_mult:
             special_mult = (
