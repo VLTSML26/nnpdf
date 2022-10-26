@@ -157,21 +157,15 @@ class N3FitConfig(Config):
             N3FIT_FIXED_CONFIG['use_user_uncertainties'] = thconfig.get('use_user_uncertainties', False) 
             N3FIT_FIXED_CONFIG['use_scalevar_uncertainties'] = thconfig.get('use_scalevar_uncertainties', True) 
         #Closuretest with inconsistent data flags
-        N3FIT_FIXED_CONFIG['manipulate_eigenvalue'] = False
-        N3FIT_FIXED_CONFIG['num_turnoff'] = None
-        N3FIT_FIXED_CONFIG['inconsistent_experiment'] = None
-        if (inconsistentdata:=file_content.get('closuretest').get('inconsistent_data')) is not None:
-            log.warning("Performing closuretest with inconsistent data")
-            N3FIT_FIXED_CONFIG['num_turnoff'] = inconsistentdata.get('num_turnoff', None)
-            N3FIT_FIXED_CONFIG['inconsistent_experiment'] = inconsistentdata.get('inconsistent_experiment', None)
-            if N3FIT_FIXED_CONFIG['num_turnoff'] is not None:
-                if N3FIT_FIXED_CONFIG['inconsistent_experiment'] is None:
-                    raise ConfigError("Please indicate the inconsistent experiment.")
-                N3FIT_FIXED_CONFIG['manipulate_eigenvalue'] = True
-                log.warning(
-                    "Changing %s eigenvalue(s) in %s's covariance matrix",
-                    N3FIT_FIXED_CONFIG['num_turnoff'], N3FIT_FIXED_CONFIG['inconsistent_experiment']
-                )
+        N3FIT_FIXED_CONFIG['missingsys_experiments'] = None
+        if (closuretest:=file_content.get('closuretest')) is not None:
+            N3FIT_FIXED_CONFIG['missingsys_experiments'] = closuretest.get('missingsys_experiments', None)
+            if (dic:=N3FIT_FIXED_CONFIG['missingsys_experiments']) is not None:
+                for k in dic.keys():
+                    log.warning(
+                        "Multiplying systematics in %s's covariance matrix by %s",
+                        k, dic[k]
+                    )
         #Sampling flags
         if (sam_t0:=file_content.get('sampling')) is not None:
             N3FIT_FIXED_CONFIG['use_t0_sampling'] = sam_t0.get('use_t0', False) 
