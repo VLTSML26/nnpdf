@@ -130,6 +130,7 @@ def covmat_from_systematics(
 
 
 def dataset_inputs_covmat_from_systematics(
+    missingsys_exps,
     dataset_inputs_loaded_cd_with_cuts,
     data_input,
     use_weights_in_covmat=True,
@@ -212,8 +213,12 @@ def dataset_inputs_covmat_from_systematics(
         # separate out the special uncertainties which can be correlated across
         # datasets
         is_intra_dataset_error = sys_errors.columns.isin(INTRA_DATASET_SYS_NAME)
+        if dsinp.name in missingsys_exps.keys():
+            sys_errors = sys_errors * missingsys_exps[dsinp.name]
         block_diags.append(construct_covmat(
-            stat_errors, sys_errors.loc[:, is_intra_dataset_error]))
+            stat_errors, 
+            sys_errors.loc[:, is_intra_dataset_error]
+        ))
         special_corrs.append(sys_errors.loc[:, ~is_intra_dataset_error])
 
     # concat systematics across datasets
@@ -308,6 +313,7 @@ dataset_inputs_t0_predictions = collect("dataset_t0_predictions", ("data",))
 
 
 def dataset_inputs_t0_covmat_from_systematics(
+    missingsys_exps,
     dataset_inputs_loaded_cd_with_cuts,
     *,
     data_input,
@@ -338,6 +344,7 @@ def dataset_inputs_t0_covmat_from_systematics(
         t0 covariance matrix matrix for list of datasets.
     """
     return dataset_inputs_covmat_from_systematics(
+        missingsys_exps,
         dataset_inputs_loaded_cd_with_cuts,
         data_input,
         use_weights_in_covmat,
@@ -360,6 +367,7 @@ def dataset_inputs_t0_total_covmat_separate(
     return covmat
 
 def dataset_inputs_t0_exp_covmat_separate(
+    missingsys_exps,
     dataset_inputs_loaded_cd_with_cuts,
     *,
     data_input,
@@ -372,7 +380,7 @@ def dataset_inputs_t0_exp_covmat_separate(
     In this case the t0 prescription is used for the experimental covmat and the multiplicative 
     errors are separated.
     """
-    covmat = generate_exp_covmat(dataset_inputs_loaded_cd_with_cuts, data_input, use_weights_in_covmat, norm_threshold, dataset_inputs_t0_predictions , True)
+    covmat = generate_exp_covmat(missingsys_exps, dataset_inputs_loaded_cd_with_cuts, data_input, use_weights_in_covmat, norm_threshold, dataset_inputs_t0_predictions , True)
     return covmat
 
 def dataset_inputs_total_covmat_separate(
@@ -389,6 +397,7 @@ def dataset_inputs_total_covmat_separate(
     return covmat
 
 def dataset_inputs_exp_covmat_separate(
+    missingsys_exps,
     dataset_inputs_loaded_cd_with_cuts,
     *,
     data_input,
@@ -400,7 +409,7 @@ def dataset_inputs_exp_covmat_separate(
     In this case the t0 prescription is not used for the experimental covmat and the multiplicative 
     errors are separated. 
     """
-    covmat = generate_exp_covmat(dataset_inputs_loaded_cd_with_cuts, data_input, use_weights_in_covmat, norm_threshold, None , True)
+    covmat = generate_exp_covmat(missingsys_exps, dataset_inputs_loaded_cd_with_cuts, data_input, use_weights_in_covmat, norm_threshold, None , True)
     return covmat
 
 def dataset_inputs_t0_total_covmat(
@@ -417,6 +426,7 @@ def dataset_inputs_t0_total_covmat(
     return covmat
 
 def dataset_inputs_t0_exp_covmat(
+    missingsys_exps,
     dataset_inputs_loaded_cd_with_cuts,
     *,
     data_input,
@@ -429,7 +439,7 @@ def dataset_inputs_t0_exp_covmat(
     by fitting_data_dict. In this case the t0 prescription is used for the experimental covmat 
     and the multiplicative errors are included in it. 
     """
-    covmat = generate_exp_covmat(dataset_inputs_loaded_cd_with_cuts, data_input, use_weights_in_covmat, norm_threshold, dataset_inputs_t0_predictions , False)
+    covmat = generate_exp_covmat(missingsys_exps, dataset_inputs_loaded_cd_with_cuts, data_input, use_weights_in_covmat, norm_threshold, dataset_inputs_t0_predictions , False)
     return covmat
 
 def dataset_inputs_total_covmat(
@@ -446,6 +456,7 @@ def dataset_inputs_total_covmat(
     return covmat
 
 def dataset_inputs_exp_covmat(
+    missingsys_exps,
     dataset_inputs_loaded_cd_with_cuts,
     *,
     data_input,
@@ -457,10 +468,12 @@ def dataset_inputs_exp_covmat(
     by fitting_data_dict. In this case the t0 prescription is not used for the experimental covmat 
     and the multiplicative errors are included in it.
     """
-    covmat = generate_exp_covmat(dataset_inputs_loaded_cd_with_cuts, data_input, use_weights_in_covmat, norm_threshold, None , False)
+    covmat = generate_exp_covmat(missingsys_exps, dataset_inputs_loaded_cd_with_cuts, data_input, use_weights_in_covmat, norm_threshold, None , False)
     return covmat
 
-def generate_exp_covmat(datasets_input,
+def generate_exp_covmat(
+    missingsys_exps,
+    datasets_input,
     data,
     use_weights, 
     norm_threshold, 
@@ -499,6 +512,7 @@ def generate_exp_covmat(datasets_input,
         experimental covariance matrix
     """
     return dataset_inputs_covmat_from_systematics(
+        missingsys_exps,
         datasets_input,
         data,
         use_weights,
