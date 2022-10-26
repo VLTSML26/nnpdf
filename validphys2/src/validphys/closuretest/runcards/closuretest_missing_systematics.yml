@@ -65,9 +65,9 @@ closuretest:
   rancutmethod: 0
   rancuttrnval: false
   printpdf4gen: false
-  inconsistent_data:
-    num_turnoff: 1
-    inconsistent_experiment: LHCb
+  missingsys_experiments:
+    CHORUSNUPb_dw_ite: 0.5
+    CHORUSNBPb_dw_ite: 0.2
 
 theory:
   theoryid: 200
