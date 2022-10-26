@@ -839,9 +839,8 @@ class CoreConfig(configparser.Config):
         dataset_inputs_fitting_covmat_manipulated_and_reconstructed,
         inconsistent_experiment,
         data,
-        manipulate_eigenvalue: bool = False
     ):  
-        if manipulate_eigenvalue and data.name == inconsistent_experiment:
+        if inconsistent_experiment is not None and data.name == inconsistent_experiment:
             return dataset_inputs_fitting_covmat_manipulated_and_reconstructed
         else:
             return dataset_inputs_fitting_covmat
