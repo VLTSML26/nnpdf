@@ -881,8 +881,7 @@ def closuretest_summary(
     fakepdf,
     theoryid,
     fakenoise,
-    num_turnoff=None,
-    inconsistent_experiment=None
+    missingsys_experiments=None,
 ):
     """
     Table that summarizes the closure-test specifics, like its level and possible
@@ -906,9 +905,10 @@ def closuretest_summary(
         'Theory ID': theoryid.id,
         'Fake PDF': fakepdf,
     }
-    if num_turnoff is not None:
-        summary['Missing systematics'] = 'yes'
-        summary['Experiment'] = inconsistent_experiment
-        summary['Number of missing'] = num_turnoff
-    df = pd.DataFrame.from_dict(summary, orient='index', columns=['Closure test summary'])
+    if missingsys_experiments is not None:
+        summary = {
+            'Closure test specs': summary,
+            'Systematics normalizations': missingsys_experiments
+        }
+    df = pd.DataFrame.from_dict(summary).fillna('')
     return df
