@@ -1,4 +1,4 @@
-fit: missing-lhcb-sv-001
+fit: missingsys-lhcb-sv-001
 
 pdf: 220426-sv-003_fakepdf
 t0pdfset: 220426-sv-003_fakepdf
@@ -15,12 +15,8 @@ fakenoise:
   from_: closuretest
 fakepdf:
   from_: closuretest
-inconsistent_data:
+missingsys_experiments:
   from_: closuretest
-num_turnoff:
-  from_: inconsistent_data
-inconsistent_experiment:
-  from_: inconsistent_data
 
 meta:
     author: Samuele Voltan
