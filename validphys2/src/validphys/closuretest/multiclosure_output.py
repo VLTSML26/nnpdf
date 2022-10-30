@@ -910,5 +910,7 @@ def closuretest_summary(
             'Closure test specs': summary,
             'Systematics normalizations': missingsys_experiments
         }
-    df = pd.DataFrame.from_dict(summary).fillna('')
+        df = pd.DataFrame.from_dict(summary).fillna('')
+    else:
+        df = pd.DataFrame.from_dict(summary, orient='index', columns=['Closure test specs'])
     return df
