@@ -77,8 +77,14 @@ class StatsResult(Result):
 class DataResult(StatsResult):
     """Holds the relevant information from a given dataset"""
 
-    def __init__(self, dataobj, covmat, sqrtcovmat):
-        self._central_value = dataobj.get_cv()
+    def __init__(self, dataset, covmat, sqrtcovmat):
+        # The commondata is currently a libNNPDF object
+        loaded_cd = dataset.load_commondata()
+        if isinstance(loaded_cd, list):
+            cv = np.concatenate([cd.get_cv() for cd in loaded_cd])
+        else:
+            cv = loaded_cd.get_cv()
+        self._central_value = cv
         stats = Stats(self._central_value)
         self._covmat = covmat
         self._sqrtcovmat = sqrtcovmat
@@ -462,9 +468,8 @@ def results(dataset: (DataSetSpec), pdf: PDF, covariance_matrix, sqrt_covmat):
     The theory is specified as part of the dataset.
     A group of datasets is also allowed.
     (as a result of the C++ code layout)."""
-    data = dataset.load()
     return (
-        DataResult(data, covariance_matrix, sqrt_covmat),
+        DataResult(dataset, covariance_matrix, sqrt_covmat),
         ThPredictionsResult.from_convolution(pdf, dataset),
     )
 
@@ -493,7 +498,7 @@ def pdf_results(
 
     th_results = [ThPredictionsResult.from_convolution(pdf, dataset) for pdf in pdfs]
 
-    return (DataResult(dataset.load(), covariance_matrix, sqrt_covmat), *th_results)
+    return (DataResult(dataset, covariance_matrix, sqrt_covmat), *th_results)
 
 
 @require_one("pdfs", "pdf")
@@ -715,11 +720,11 @@ def count_negative_points(possets_predictions):
 
 
 chi2_stat_labels = {
-    "central_mean": r"$<\chi^2_{0}>_{data}$",
+    "central_mean": r"$\chi^2_{rep0}$",
     "npoints": r"$N_{data}$",
-    "perreplica_mean": r"$\left< \chi^2 \right>_{rep,data}$",
-    "perreplica_std": r"$\left<std_{rep}(\chi^2)\right>_{data}$",
-    "chi2_per_data": r"$\frac{\chi^2}{N_{data}}$",
+    "perreplica_mean": r"$\left< \chi^2 \right>_{rep}$",
+    "perreplica_std": r"$std_{rep}(\chi^2)$",
+    "chi2_per_data": r"$\chi^2 / N_{data}$",
 }
 
 
@@ -739,7 +744,7 @@ def experiments_chi2_stats(total_chi2_data):
     """
     rep_data, central_result, npoints = total_chi2_data
     m = central_result.mean()
-    rep_mean = rep_data.central_value().mean()
+    rep_mean = rep_data.error_members().mean()
     return OrderedDict(
         [
             ("central_mean", m),
@@ -766,7 +771,7 @@ def chi2_stats(abs_chi2_data):
     """
     rep_data, central_result, npoints = abs_chi2_data
     m = central_result.mean()
-    rep_mean = rep_data.central_value().mean()
+    rep_mean = rep_data.error_members().mean()
     return OrderedDict(
         [
             ("central_mean", m),

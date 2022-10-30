@@ -11,6 +11,11 @@ We are comparing:
 
 {@ summarise_fits @}
 
+
+t0 losses
+---------
+{@ dataspecs::t0_info t0_chi2_info_table @}
+
 Theory covariance summary
 -------------------------
 {@summarise_theory_covmat_fits@}
@@ -68,6 +73,14 @@ Effective exponents
 Training lengths
 ----------------
 {@fits plot_training_length@}
+
+Overfit measure
+----------------
+{@with dataspecs::t0_info@}
+{@t0_info plot_overfitting_histogram@}
+{@t0_info fit_overfitting_summary@}
+{@endwith@}
+
 
 Training-validation
 -------------------

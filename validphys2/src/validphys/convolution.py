@@ -112,9 +112,15 @@ def _predictions(dataset, pdf, fkfunc):
             "commondata and is not supported."
         )
     cuts = dataset.cuts.load()
-    all_predictions = [
-        fkfunc(load_fktable(fk).with_cuts(cuts), pdf) for fk in dataset.fkspecs
-    ]
+    all_predictions = []
+    for fk in dataset.fkspecs:
+        fk_w_cuts = load_fktable(fk).with_cuts(cuts)
+        all_predictions.append(fkfunc(fk_w_cuts, pdf))
+    # Old fktables repeated values to make DEN and NUM sizes match in RATIO operations
+    # pineappl tables instead just contain the one value used
+    # The code below works for both situation while keeping `true_div` as the operation
+    if dataset.op == "RATIO":
+        all_predictions[-1] = all_predictions[-1].values
     return opfunc(*all_predictions)
 
 
