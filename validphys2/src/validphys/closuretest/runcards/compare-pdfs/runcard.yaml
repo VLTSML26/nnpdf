@@ -1,7 +1,7 @@
-fit: missing-lhcb-sv-001
+fit: missingsys-lhcb-sv-001
 
 fitsummary:
-  - fit: missing-lhcb-sv-001
+  - fit: missingsys-lhcb-sv-001
     closuretest:
       from_: fit
     genrep:
@@ -10,12 +10,8 @@ fitsummary:
       from_: closuretest
     fakepdf:
       from_: closuretest
-    inconsistent_data:
+    missingsys_experiments:
       from_: closuretest
-    num_turnoff:
-      from_: inconsistent_data
-    inconsistent_experiment:
-      from_: inconsistent_data
     tablename: "Inconsistent fit"
   - fit: level2base-001
     closuretest:
@@ -26,13 +22,12 @@ fitsummary:
       from_: closuretest
     fakepdf:
       from_: closuretest
-    manipulate_eigenvalue: False
     tablename: "Classical closure fit"
 
 pdf: 220426-sv-003_fakepdf
 pdfs:
   - 220426-sv-003_fakepdf
-  - missing-lhcb-sv-001
+  - missingsys-lhcb-sv-001
   - level2base-001
 Q: 1.651
 scales:
