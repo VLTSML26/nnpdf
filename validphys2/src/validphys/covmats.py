@@ -213,7 +213,7 @@ def dataset_inputs_covmat_from_systematics(
         # separate out the special uncertainties which can be correlated across
         # datasets
         is_intra_dataset_error = sys_errors.columns.isin(INTRA_DATASET_SYS_NAME)
-        if dsinp.name in missingsys_exps.keys():
+        if missingsys_exps is not None and dsinp.name in missingsys_exps.keys():
             sys_errors = sys_errors * missingsys_exps[dsinp.name]
         block_diags.append(construct_covmat(
             stat_errors, 
