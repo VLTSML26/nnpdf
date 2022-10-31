@@ -1,7 +1,7 @@
-fit: missingsys-lhcb-sv-001
+fit: lhcb-0point1-sv-001
 
 fitsummary:
-  - fit: missingsys-lhcb-sv-001
+  - fit: lhcb-0point1-sv-001
     closuretest:
       from_: fit
     genrep:
@@ -26,10 +26,15 @@ fitsummary:
 
 pdf: 220426-sv-003_fakepdf
 pdfs:
-  - 220426-sv-003_fakepdf
-  - missingsys-lhcb-sv-001
-  - level2base-001
+  - {id: 220426-sv-003_fakepdf, label: Underlying PDF}
+  - {id: lhcb-0point1-sv-001, label: 1/10 of LHCb's sys}
+  - {id: level2base-001, label: Base lv2 closuretest}
 Q: 1.651
+PDFscalespecs:
+  - xscale: log
+    Xscaletitle: Log
+  - xscale: linear
+    Xscaletitle: Linear
 scales:
   - Q: 1.651
     scaletitle: "Q = 1.65 GeV"

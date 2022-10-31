@@ -17,14 +17,19 @@ PDFs
 ----
 
 {@ with scales @}
-
-### Plots at {@ scaletitle @}
+{@ with PDFscalespecs @}
+### Plots at {@ scaletitle @}, xscale {@ Xscaletitle @}
 
 {@ plot_pdfs @}
 
+{@ endwith @}
 {@ endwith @}
 
 Replicas
 --------
 
+{@ with PDFscalespecs @}
+### Xscale {@ Xscaletitle @}
+
 {@ plot_pdfreplicas @}
+{@ endwith @}
