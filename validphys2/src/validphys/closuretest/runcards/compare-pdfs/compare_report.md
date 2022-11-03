@@ -33,3 +33,8 @@ Replicas
 
 {@ plot_pdfreplicas @}
 {@ endwith @}
+
+$\chi^2$ per dataset
+--------------------
+
+{@ plot_fits_datasets_chi2 @}

@@ -1,5 +1,12 @@
 fit: lhcb-0point1-sv-001
 
+# to display che chi2: if you want to compare chi2 to other fits, put them here
+fits:
+  - id: lhcb-0point1-sv-001
+    label: "Inconsistent fit"
+  - id: level2base-001
+    label: "Base lv2 closuretest"
+
 fitsummary:
   - fit: lhcb-0point1-sv-001
     closuretest:
@@ -22,12 +29,12 @@ fitsummary:
       from_: closuretest
     fakepdf:
       from_: closuretest
-    tablename: "Classical closure fit"
+    tablename: "Base lv2 closuretest"
 
 pdf: 220426-sv-003_fakepdf
 pdfs:
-  - {id: 220426-sv-003_fakepdf, label: Underlying PDF}
   - {id: lhcb-0point1-sv-001, label: 1/10 of LHCb's sys}
+  - {id: 220426-sv-003_fakepdf, label: Underlying PDF}
   - {id: level2base-001, label: Base lv2 closuretest}
 Q: 1.651
 PDFscalespecs:
