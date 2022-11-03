@@ -14,7 +14,6 @@ from importlib.resources import read_text, contents
 
 from collections import ChainMap, defaultdict
 from collections.abc import Mapping, Sequence
-from this import d
 
 import pandas as pd
 import glob

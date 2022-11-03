@@ -1,7 +1,7 @@
 #
 # Closure fit runcard: inconsistent data branch.
 # Author: Samuele Voltan
-# Use on branch: closuretest-eigenchange
+# Use on branch: closuretest-missingsys
 # Last update: october 2022
 #
 
@@ -66,8 +66,8 @@ closuretest:
   rancuttrnval: false
   printpdf4gen: false
   missingsys_experiments:
-    CHORUSNUPb_dw_ite: 0.5
-    CHORUSNBPb_dw_ite: 0.2
+    CHORUSNUPb_dw_ite: 0.1
+    CHORUSNBPb_dw_ite: 0.1
 
 theory:
   theoryid: 200
