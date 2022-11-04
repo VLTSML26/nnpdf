@@ -17,6 +17,7 @@ import scipy.stats as stats
 import pandas as pd
 
 from reportengine.figure import figure, figuregen
+from reportengine.table import table
 from reportengine.checks import make_check, CheckError, make_argcheck, check
 from reportengine.floatformatting import format_number
 from reportengine import collect
@@ -1353,6 +1354,7 @@ def plot_xq2(
         else:
             # This is to get the label key
             coords = [], []
+        print(key + str(coords[0].shape[0]))
         ax.plot(
             *coords,
             label=key,
@@ -1402,3 +1404,72 @@ def plot_xq2(
     ax.set_xscale("log")
     ax.set_yscale("log")
     return fig
+
+@table
+def table_xq2_numpoints(
+    dataset_inputs_by_groups_xq2map,
+    use_cuts,
+    data_input,
+    highlight_datasets: (Sequence, type(None)) = None,
+):
+
+    len_fitdataset = 0
+    len_fitdataset_with_cuts = 0
+    len_outofsample = 0
+    len_outofsample_with_cuts = 0
+    for (_, commondata, fitted, masked, _) in dataset_inputs_by_groups_xq2map:
+        # try:
+        #     assert commondata.ndata == len(fitted[1]) + len(masked[1])
+        # except:
+        #     import ipdb; ipdb.set_trace()
+        if commondata.name in highlight_datasets:
+            len_outofsample += commondata.ndata
+            # len_outofsample_with_cuts += len(fitted[0])
+            # if commondata.process_type == 'DIS':
+            #     len_outofsample_DIS += commondata.ndata
+        else:
+            len_fitdataset += commondata.ndata
+            # len_fitdataset_with_cuts += len(fitted[0])
+
+    tmp_dict = {
+        'Fit datasets': {
+            'No cuts': len_fitdataset,
+            # 'With cuts': len_fitdataset_with_cuts
+        },
+        'Out of sample datasets': {
+            'No cuts': len_outofsample, 
+            # 'With cuts': len_outofsample_with_cuts
+        }
+    }
+    return pd.DataFrame.from_dict(tmp_dict).transpose()
+
+@table
+def table_xq2_numpoints_all_datasets(
+    dataset_inputs_by_groups_xq2map,
+    highlight_datasets: (Sequence, type(None)) = None,
+):
+    """Return dataset properties for each dataset in ``data_input``"""
+    dataset_property_dict = defaultdict(list)
+    explist = []
+    for (experiment, commondata, _, _, _) in dataset_inputs_by_groups_xq2map:
+        if commondata.name in highlight_datasets:
+            outofsample = 'Yes'
+        else:
+            outofsample = ''
+        tmp_dict = {
+            commondata.name: [commondata.ndata, outofsample]
+        }
+        dataset_property_dict[experiment].append(tmp_dict)
+        explist.append(experiment)
+
+    df = pd.DataFrame.from_dict(
+        {(key, subkey): subvalue
+        for key in dataset_property_dict.keys()
+        for sublist in dataset_property_dict[key]
+        for (subkey, subvalue) in zip(sublist.keys(), sublist.values())},
+        orient='index',
+        columns=['Ndata', 'Out of sample']
+    )
+    df.index = pd.MultiIndex.from_tuples(df.index)
+    # print("Out of sample: " + str(np.sum(df.values[df.values[:,-1] == 'Yes'], axis=0)[0]))
+    return df
