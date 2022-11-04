@@ -160,12 +160,17 @@ class N3FitConfig(Config):
         N3FIT_FIXED_CONFIG['missingsys_experiments'] = None
         if (closuretest:=file_content.get('closuretest')) is not None:
             N3FIT_FIXED_CONFIG['missingsys_experiments'] = closuretest.get('missingsys_experiments', None)
-            if (dic:=N3FIT_FIXED_CONFIG['missingsys_experiments']) is not None:
-                for k in dic.keys():
-                    log.warning(
-                        "Multiplying systematics in %s's covariance matrix by %s",
-                        k, dic[k]
-                    )
+            if (dics:=N3FIT_FIXED_CONFIG['missingsys_experiments']) is not None:
+                for dic in dics:
+                    try:
+                        log.warning(
+                            "Inconsistency in %s: sysfrac = %s, sysmiss = %s",
+                            dic['set'], dic['sysfrac'], dic['sysmiss']
+                        )
+                    except:
+                        raise ConfigError(
+                            "Must provide set, sysfrac and sysmiss within missingsys_experiments"
+                        )
         #Sampling flags
         if (sam_t0:=file_content.get('sampling')) is not None:
             N3FIT_FIXED_CONFIG['use_t0_sampling'] = sam_t0.get('use_t0', False) 
