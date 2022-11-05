@@ -2,7 +2,7 @@
 # Closure fit runcard: inconsistent data branch.
 # Author: Samuele Voltan
 # Use on branch: closuretest-missingsys
-# Last update: october 2022
+# Last update: november 2022
 #
 
 description: "NNPDF4.0 closure fit with missing systematics"
