@@ -900,17 +900,26 @@ def closuretest_summary(
         level = 2
     if genrep and not fakenoise:
         level = 'unknown'
-    summary = {
-        'Level': level,
-        'Theory ID': theoryid.id,
-        'Fake PDF': fakepdf,
-    }
     if missingsys_experiments is not None:
         summary = {
-            'Closure test specs': summary,
-            'Systematics normalizations': missingsys_experiments
+        ('Level', '', ''): level,
+        ('Theory ID', '', ''): theoryid.id,
+        ('Fake PDF', '', ''): fakepdf,
         }
-        df = pd.DataFrame.from_dict(summary).fillna('')
+        missingsys = {}
+        for mis in missingsys_experiments:
+            dset, sf, sm = mis.keys()
+            missingsys[('Sys manipulation', mis[dset], 'Fraction')] =  mis[sf]
+            missingsys[('Sys manipulation', mis[dset], 'Removed')] =  mis[sm]
+        summary_df = pd.DataFrame.from_dict(summary, orient='index', columns=['Specs'])
+        missingsys_df = pd.DataFrame.from_dict(missingsys, orient='index', columns=['Specs'])
+        df = pd.concat([summary_df, missingsys_df], axis=0)
+        df.index = pd.MultiIndex.from_tuples(df.index)
     else:
-        df = pd.DataFrame.from_dict(summary, orient='index', columns=['Closure test specs'])
+        summary = {
+            'Level': level,
+            'Theory ID': theoryid.id,
+            'Fake PDF': fakepdf,
+        }
+        df = pd.DataFrame.from_dict(summary, orient='index', columns=['Specs'])
     return df

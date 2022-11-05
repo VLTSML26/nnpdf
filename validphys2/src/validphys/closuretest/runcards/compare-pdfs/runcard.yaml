@@ -56,7 +56,7 @@ dataset_inputs:
 
 meta:
     author: Samuele Voltan
-    title: Closuretest missing systematics pdfs
+    title: Closure with missing LHCb sys
     keywords: [closuretest, inconsistency]
 
 template: compare_report.md
