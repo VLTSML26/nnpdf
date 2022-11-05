@@ -218,7 +218,16 @@ def dataset_inputs_covmat_from_systematics(
                 if dsinp.name == missingsys_exp['set']:
                     sys_errors = sys_errors * missingsys_exp['sysfrac']
                     if missingsys_exp['sysmiss'] == 'max':
-                        sys_errors[sys_errors.sum().idxmax()] = 1e-10
+                        ## OVER AXIS 0
+                        # option 1: take simple sum
+                        # sys_errors[sys_errors.sum(axis=0).idxmax()] = 1e-10
+                        # option 2: take sum of abs
+                        sys_errors[sys_errors.abs().sum(axis=0).idxmax()] = 1e-10
+                        ## OVER AXIS 1
+                        # option 1: take simple sum
+                        # sys_errors[sys_errors.sum(axis=1).idxmax()] = 1e-10
+                        # option 2: take sum of abs
+                        # sys_errors[sys_errors.abs().sum(axis=1).idxmax()] = 1e-10
                     elif missingsys_exp['sysmiss'] == 'random':
                         keys = sys_errors.keys()
                         randkey = np.random.randint(len(keys))
