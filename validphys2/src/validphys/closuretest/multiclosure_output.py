@@ -1369,8 +1369,7 @@ def closuretest_summary(
     fakepdf,
     theoryid,
     fakenoise,
-    num_turnoff=None,
-    inconsistent_experiment=None
+    missingsys_experiments=None,
 ):
     """
     Table that summarizes the closure-test specifics, like its level and possible
@@ -1389,14 +1388,26 @@ def closuretest_summary(
         level = 2
     if genrep and not fakenoise:
         level = 'unknown'
-    summary = {
-        'Level': level,
-        'Theory ID': theoryid.id,
-        'Fake PDF': fakepdf,
-    }
-    if num_turnoff is not None:
-        summary['Missing systematics'] = 'yes'
-        summary['Experiment'] = inconsistent_experiment
-        summary['Number of missing'] = num_turnoff
-    df = pd.DataFrame.from_dict(summary, orient='index', columns=['Closure test summary'])
+    if missingsys_experiments is not None:
+        summary = {
+        ('Level', '', ''): level,
+        ('Theory ID', '', ''): theoryid.id,
+        ('Fake PDF', '', ''): fakepdf,
+        }
+        missingsys = {}
+        for mis in missingsys_experiments:
+            dset, sf, sm = mis.keys()
+            missingsys[('Sys manipulation', mis[dset], 'Fraction')] =  mis[sf]
+            missingsys[('Sys manipulation', mis[dset], 'Removed')] =  mis[sm]
+        summary_df = pd.DataFrame.from_dict(summary, orient='index', columns=['Specs'])
+        missingsys_df = pd.DataFrame.from_dict(missingsys, orient='index', columns=['Specs'])
+        df = pd.concat([summary_df, missingsys_df], axis=0)
+        df.index = pd.MultiIndex.from_tuples(df.index)
+    else:
+        summary = {
+            'Level': level,
+            'Theory ID': theoryid.id,
+            'Fake PDF': fakepdf,
+        }
+        df = pd.DataFrame.from_dict(summary, orient='index', columns=['Specs'])
     return df
