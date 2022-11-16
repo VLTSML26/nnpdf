@@ -66,7 +66,7 @@ def main():
             normalized_to_data_norms = np.asarray(normalized_to_data_norms).reshape(-1, 1)
             normalized_to_data_norms = StandardScaler().fit_transform(normalized_to_data_norms)
             norms_dict = {
-                (cd.setname, sys_errors.keys()[i]): norm
+                (cd.setname, sys_errors.keys()[i]): np.abs(norm)
                 for i, norm in enumerate(normalized_to_data_norms)
             }
             norms_df = pd.DataFrame.from_dict(norms_dict, orient='index', columns=[norms_value])
