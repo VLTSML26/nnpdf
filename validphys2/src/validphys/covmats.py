@@ -222,7 +222,8 @@ def dataset_inputs_covmat_from_systematics(
                         randkey = np.random.randint(len(keys))
                         sys_errors[keys[randkey]] = 0.
                     else:
-                        sys_errors[missingsys_exp['sysmiss']] = 0.
+                        for miss_key in missingsys_exp['sysmiss']:
+                            sys_errors[miss_key] = 0.
         block_diags.append(construct_covmat(
             stat_errors, 
             sys_errors.loc[:, is_intra_dataset_error]
