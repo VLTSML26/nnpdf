@@ -217,7 +217,6 @@ def dataset_inputs_covmat_from_systematics(
             for missingsys_exp in missingsys_exps:
                 if dsinp.name == missingsys_exp['set']:
                     sys_errors = sys_errors * missingsys_exp['sysfrac']
-                    import ipdb; ipdb.set_trace()
                     if missingsys_exp['sysmiss'] == 'random':
                         keys = sys_errors.keys()
                         randkey = np.random.randint(len(keys))
