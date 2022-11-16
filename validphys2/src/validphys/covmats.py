@@ -217,21 +217,13 @@ def dataset_inputs_covmat_from_systematics(
             for missingsys_exp in missingsys_exps:
                 if dsinp.name == missingsys_exp['set']:
                     sys_errors = sys_errors * missingsys_exp['sysfrac']
-                    if missingsys_exp['sysmiss'] == 'max':
-                        ## OVER AXIS 0
-                        # option 1: take simple sum
-                        # sys_errors[sys_errors.sum(axis=0).idxmax()] = 1e-10
-                        # option 2: take sum of abs
-                        sys_errors[sys_errors.abs().sum(axis=0).idxmax()] = 1e-10
-                        ## OVER AXIS 1
-                        # option 1: take simple sum
-                        # sys_errors[sys_errors.sum(axis=1).idxmax()] = 1e-10
-                        # option 2: take sum of abs
-                        # sys_errors[sys_errors.abs().sum(axis=1).idxmax()] = 1e-10
-                    elif missingsys_exp['sysmiss'] == 'random':
+                    import ipdb; ipdb.set_trace()
+                    if missingsys_exp['sysmiss'] == 'random':
                         keys = sys_errors.keys()
                         randkey = np.random.randint(len(keys))
-                        sys_errors[keys[randkey]] = 1e-10
+                        sys_errors[keys[randkey]] = 0.
+                    else:
+                        sys_errors[missingsys_exp['sysmiss']] = 0.
         block_diags.append(construct_covmat(
             stat_errors, 
             sys_errors.loc[:, is_intra_dataset_error]

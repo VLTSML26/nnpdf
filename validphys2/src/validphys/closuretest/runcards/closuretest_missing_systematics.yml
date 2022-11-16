@@ -66,8 +66,8 @@ closuretest:
   rancuttrnval: false
   printpdf4gen: false
   missingsys_experiments:
-    - {set: CHORUSNUPb_dw_ite, sysfrac: 0.9, sysmiss: max}
-    - {set: CHORUSNBPb_dw_ite, sysfrac: 0.9, sysmiss: max}
+    - {set: CHORUSNUPb_dw_ite, sysfrac: 0.9, sysmiss: NUCLEAR999}
+    - {set: CHORUSNBPb_dw_ite, sysfrac: 0.9, sysmiss: CHORUSQEDRADCOR1}
 
 theory:
   theoryid: 200
