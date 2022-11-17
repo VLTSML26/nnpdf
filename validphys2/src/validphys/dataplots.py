@@ -33,6 +33,7 @@ from validphys.get_sysmax import get_covmat
 from validphys.covmats import dataset_inputs_covmat_from_systematics
 log = logging.getLogger(__name__)
 
+UNCORR_KEYS = ["UNCORR", "THEORYUNCORR"]
 
 @figure
 def plot_chi2dist_experiments(total_chi2_data, experiments_chi2_stats, pdf):
@@ -1496,14 +1497,19 @@ def systematics_impact_on_trace_covmat_table(
         if cd.setname in impact_datasets:
             traces_list = []
             sys_errors = cd.systematic_errors()
-            for key in sys_errors.keys():
+
+            # NOTE: unique in order to take matrices only once
+            for key in np.unique(sys_errors.keys()):
+                # Discard UNCORR and THEORYUNCORR for this purpose
+                if key in UNCORR_KEYS:
+                    break
                 covmat = get_covmat(key, dataset_inputs_loaded_cd_with_cuts, data_input)
                 trace = np.trace(covmat)
                 traces_list += [
                     np.abs(trace - tot_trace) * 100 / tot_trace
                 ]
             traces_dict = {
-                (cd.setname, sys_errors.keys()[i]): trace
+                (cd.setname, np.unique(sys_errors.keys())[i]): trace
                 for i, trace in enumerate(traces_list)
             }
             traces_df = pd.DataFrame.from_dict(traces_dict, orient='index', columns=[value])
@@ -1527,21 +1533,30 @@ def systematics_norm_vector_normalized_to_data_table(
         if cd.setname in impact_datasets:
             norms_list = []
             sys_errors = cd.systematic_errors()
-            for key in sys_errors.keys():
+
+            # NOTE: unique in order to take matrices only once
+            keys = np.unique(sys_errors.keys())
+            if len(keys) != len(sys_errors.keys()):
+                log.warning('Some systematics appear in form of a matrix.')
+            for key in keys:
+                # Discard UNCORR and THEORYUNCORR for this purpose
+                if key in UNCORR_KEYS:
+                    break
                 try:
                     relative_errors = sys_errors[key].values / cd.central_values.values
                     norms_list += [relative_errors @ relative_errors]
                 except:
-                    log.warning('%s not considered in sys norms table.', key)
-                    # sys_matrix = sys_errors[key].values
-                    # cv = cd.central_values.values
-                    # n_cv = cv.shape[-1]
-                    # n_sys = sys_matrix.shape[-1]
-                    # relative_errors = sys_matrix / cv.repeat(n_sys).reshape(n_cv, n_sys)
+                    sys_matrix = sys_errors[key].values
+                    cv = cd.central_values.values
+                    n_cv = cv.shape[-1]
+                    n_sys = sys_matrix.shape[-1]
+                    relative_errors = sys_matrix / cv.repeat(n_sys).reshape(n_cv, n_sys)
+                    norms_list += [np.sum(relative_errors @ relative_errors.T) / n_sys]
+                    
             norms_list = np.asarray(norms_list).reshape(-1, 1)
             norms_list = StandardScaler().fit_transform(norms_list)
             norms_dict = {
-                (cd.setname, sys_errors.keys()[i]): np.abs(norm)
+                (cd.setname, keys[i]): np.abs(norm)
                 for i, norm in enumerate(norms_list)
             }
             norms_df = pd.DataFrame.from_dict(norms_dict, orient='index', columns=[value])
