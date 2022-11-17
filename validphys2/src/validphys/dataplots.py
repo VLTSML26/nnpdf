@@ -22,6 +22,8 @@ from reportengine.checks import make_check, CheckError, make_argcheck, check
 from reportengine.floatformatting import format_number
 from reportengine import collect
 
+from sklearn.preprocessing import StandardScaler
+
 from validphys.core import MCStats, cut_mask, CutsPolicy
 from validphys.results import chi2_stat_labels
 from validphys.plotoptions import get_info, kitable, transform_result
@@ -1528,6 +1530,8 @@ def systematics_norm_vector_normalized_to_data_table(
             for key in sys_errors.keys():
                 relative_errors = sys_errors[key].values / cd.central_values.values
                 norms_list += [relative_errors @ relative_errors]
+            norms_list = np.asarray(norms_list).reshape(-1, 1)
+            norms_list = StandardScaler().fit_transform(norms_list)
             norms_dict = {
                 (cd.setname, sys_errors.keys()[i]): norm
                 for i, norm in enumerate(norms_list)
