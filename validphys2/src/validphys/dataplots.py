@@ -1511,3 +1511,31 @@ def systematics_impact_on_trace_covmat_table(
     overall_traces_df = pd.concat(traces_dfs)
     overall_traces_df.index = pd.MultiIndex.from_tuples(overall_traces_df.index)
     return overall_traces_df.groupby(level=0).head(n_display)
+
+@table
+def systematics_norm_vector_normalized_to_data_table(
+    n_display,
+    impact_datasets,
+    dataset_inputs_loaded_cd_with_cuts,
+):
+    value = r'Norm - $\langle norm\rangle$ / $\sigma$'
+    norms_dfs = []
+
+    for cd in dataset_inputs_loaded_cd_with_cuts:
+        if cd.setname in impact_datasets:
+            norms_list = []
+            sys_errors = cd.systematic_errors()
+            for key in sys_errors.keys():
+                relative_errors = sys_errors[key].values / cd.central_values.values
+                norms_list += [relative_errors @ relative_errors]
+            norms_dict = {
+                (cd.setname, sys_errors.keys()[i]): norm
+                for i, norm in enumerate(norms_list)
+            }
+            norms_df = pd.DataFrame.from_dict(norms_dict, orient='index', columns=[value])
+            norms_df.sort_values(by=value, inplace=True, ascending=False)
+            norms_dfs += [norms_df]
+    
+    overall_norms_df = pd.concat(norms_dfs)
+    overall_norms_df.index = pd.MultiIndex.from_tuples(overall_norms_df.index)
+    return overall_norms_df.groupby(level=0).head(n_display)

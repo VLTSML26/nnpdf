@@ -38,7 +38,11 @@ template_text: |
 
   For each dataset required, we display the first {@ n_display @} systematics whose underestimation has the maximum impact on the DIS covariance matrix.
 
+  # Impact on covmat trace
   {@ systematics_impact_on_trace_covmat_table @}
+
+  # Norm of sysvector normalized to data
+  {@ systematics_norm_vector_normalized_to_data_table}
 
 actions_:
   - report(main=True)
