@@ -3,8 +3,10 @@ dataset_inputs:
   - {dataset: BCDMSD_dw_ite, frac: 0.75}
   - {dataset: CHORUSNUPb_dw_ite, frac: 0.75}
   - {dataset: CHORUSNBPb_dw_ite, frac: 0.75}
+  - {dataset: DYE605_dw_ite, frac: 0.75, cfac: [QCD]}
   - {dataset: NTVNUDMNFe_dw_ite, frac: 0.75, cfac: [MAS]}
   - {dataset: NTVNBDMNFe_dw_ite, frac: 0.75, cfac: [MAS]}
+  - {dataset: DYE886R_dw_ite, frac: 0.75}
   - {dataset: SLACD_dw_ite, frac: 0.75}
   - {dataset: NMC, frac: 0.75}
   - {dataset: SLACP_dwsh, frac: 0.75}
@@ -18,6 +20,31 @@ dataset_inputs:
   - {dataset: HERACOMBCCEP, frac: 0.75}
   - {dataset: HERACOMB_SIGMARED_C, frac: 0.75}
   - {dataset: HERACOMB_SIGMARED_B, frac: 0.75}
+  - {dataset: CDFZRAP, frac: 0.75, cfac: [QCD]}
+  - {dataset: D0ZRAP, frac: 0.75, cfac: [QCD]}
+  - {dataset: D0WEASY, frac: 0.75, cfac: [QCD]}
+  - {dataset: D0WMASY, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLASWZRAP36PB, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLASZHIGHMASS49FB, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLASLOMASSDY11EXT, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLASWZRAP11CC, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLASZPT8TEVMDIST, frac: 0.75, cfac: [QCD], sys: 10}
+  - {dataset: ATLASZPT8TEVYDIST, frac: 0.75, cfac: [QCD], sys: 10}
+  - {dataset: ATLASTTBARTOT, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLAS_TTB_DIFF_8TEV_LJ_TRAPNORM, frac: 0.75, cfac: [QCD]}
+  - {dataset: ATLAS1JET11_NEW_SCALE, frac: 0.75, cfac: [QCD], sys: DECORR}
+  - {dataset: CMSWEASY840PB, frac: 0.75, cfac: [QCD]}
+  - {dataset: CMSWMASY47FB, frac: 0.75, cfac: [QCD]}
+  - {dataset: CMSDY2D11, frac: 0.75, cfac: [QCD]}
+  - {dataset: CMSWMU8TEV, frac: 0.75, cfac: [QCD]}
+  - {dataset: CMSZDIFF12, frac: 0.75, cfac: [QCD, NRM], sys: 10}
+  - {dataset: CMSJETS11_NEW_SCALE, frac: 0.75, cfac: [QCD]}
+  - {dataset: CMSTTBARTOT, frac: 0.75, cfac: [QCD]}
+  - {dataset: CMSTOPDIFF8TEVTTRAPNORM, frac: 0.75, cfac: [QCD]}
+  - {dataset: LHCBZ940PB, frac: 0.75, cfac: [QCD]}
+  - {dataset: LHCBZEE2FB, frac: 0.75, cfac: [QCD]}
+  - {dataset: LHCBWZMU7TEV, frac: 0.75, cfac: [NRM, QCD]}
+  - {dataset: LHCBWZMU8TEV, frac: 0.75, cfac: [NRM, QCD]}
 
 n_display: 10
 impact_datasets:
@@ -31,12 +58,12 @@ use_cuts: internal
 
 meta:
     author: Samuele Voltan
-    title: Impact of underestimation of sys in CHORUS and NUTEV.
+    title: Impact of nuclear systematics (CHORUS and NUTEV).
     keywords: [closuretest, inconsistency, systematics]
 
 template_text: |
 
-  For each dataset required, we display the first {@ n_display @} systematics whose underestimation has the maximum impact on the DIS covariance matrix.
+  For each dataset required, we display the first {@ n_display @} systematics whose underestimation has the maximum impact on the entire covariance matrix.
 
   ## Impact on covmat trace
   {@ systematics_impact_on_trace_covmat_table @}
