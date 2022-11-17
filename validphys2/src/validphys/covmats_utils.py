@@ -10,6 +10,8 @@ import numpy as np
 import pandas as pd
 import scipy.linalg as la
 
+INTRA_DATASET_SYS_NAME = ("UNCORR", "CORR", "THEORYUNCORR", "THEORYCORR")
+
 def systematics_matrix(stat_errors: np.array, sys_errors: pd.DataFrame):
     """Basic function to create a systematics matrix , :math:`A`, such that:
 
@@ -87,3 +89,36 @@ def construct_covmat(stat_errors: np.array, sys_errors: pd.DataFrame):
     corr_sys_mat = sys_errors.loc[:, ~is_uncorr].to_numpy()
     return np.diag(diagonal) + corr_sys_mat @ corr_sys_mat.T
     
+def get_missinsys_covmat(
+    key,
+    dataset_inputs_loaded_cd_with_cuts,
+    data_input,
+    use_weights_in_covmat=True,
+):
+    special_corrs = []
+    block_diags = []
+    weights = []
+
+    for cd, dsinp in zip(dataset_inputs_loaded_cd_with_cuts, data_input):
+        stat_errors = cd.stat_errors.to_numpy()
+        sys_errors = cd.systematic_errors()
+        weights.append(np.full_like(stat_errors, dsinp.weight))
+        sys_errors[key] = 0.
+        is_intra_dataset_error = sys_errors.columns.isin(INTRA_DATASET_SYS_NAME)
+        block_diags.append(construct_covmat(
+            stat_errors,
+            sys_errors.loc[:, is_intra_dataset_error]
+        ))
+        special_corrs.append(sys_errors.loc[:, ~is_intra_dataset_error])
+
+    special_sys = pd.concat(special_corrs, axis=0, sort=False)
+    special_sys.fillna(0, inplace=True)
+
+    diag = la.block_diag(*block_diags)
+    covmat = diag + special_sys.to_numpy() @ special_sys.to_numpy().T
+
+    if use_weights_in_covmat:
+        sqrt_weights = np.sqrt(np.concatenate(weights))
+        covmat = (covmat / sqrt_weights).T / sqrt_weights
+    
+    return covmat
