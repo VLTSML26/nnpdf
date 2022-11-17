@@ -27,7 +27,8 @@ from validphys.results import chi2_stat_labels
 from validphys.plotoptions import get_info, kitable, transform_result
 from validphys import plotutils
 from validphys.utils import sane_groupby_iter, split_ranges, scale_from_grid
-
+from validphys.get_sysmax import get_covmat
+from validphys.covmats import dataset_inputs_covmat_from_systematics
 log = logging.getLogger(__name__)
 
 
@@ -1473,3 +1474,40 @@ def table_xq2_numpoints_all_datasets(
     df.index = pd.MultiIndex.from_tuples(df.index)
     # print("Out of sample: " + str(np.sum(df.values[df.values[:,-1] == 'Yes'], axis=0)[0]))
     return df
+
+@table
+def systematics_impact_on_trace_covmat_table(
+    n_display,
+    impact_datasets,
+    dataset_inputs_loaded_cd_with_cuts,
+    data_input
+):
+    value = r'% Covmat trace changed'
+    tot_trace = np.trace(dataset_inputs_covmat_from_systematics(
+        missingsys_exps=None,
+        dataset_inputs_loaded_cd_with_cuts=dataset_inputs_loaded_cd_with_cuts,
+        data_input=data_input
+    ))
+    traces_dfs = []
+
+    for cd in dataset_inputs_loaded_cd_with_cuts:
+        if cd.setname in impact_datasets:
+            traces_list = []
+            sys_errors = cd.systematic_errors()
+            for key in sys_errors.keys():
+                covmat = get_covmat(key, dataset_inputs_loaded_cd_with_cuts, data_input)
+                trace = np.trace(covmat)
+                traces_list += [
+                    np.abs(trace - tot_trace) * 100 / tot_trace
+                ]
+            traces_dict = {
+                (cd.setname, sys_errors.keys()[i]): trace
+                for i, trace in enumerate(traces_list)
+            }
+            traces_df = pd.DataFrame.from_dict(traces_dict, orient='index', columns=[value])
+            traces_df.sort_values(by=value, inplace=True, ascending=False)
+            traces_dfs += [traces_df]
+    
+    overall_traces_df = pd.concat(traces_dfs)
+    overall_traces_df.index = pd.MultiIndex.from_tuples(overall_traces_df.index)
+    return overall_traces_df.groupby(level=0).head(n_display)

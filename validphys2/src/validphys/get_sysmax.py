@@ -1,8 +1,9 @@
 import pandas as pd
 import numpy as np
 import scipy.linalg as la
-from validphys.api import API
 from sklearn.preprocessing import StandardScaler
+from validphys.api import API
+from validphys.covmats_utils import construct_covmat
 
 INTRA_DATASET_SYS_NAME = ("UNCORR", "CORR", "THEORYUNCORR", "THEORYCORR")
 
@@ -12,21 +13,21 @@ def main():
         {'dataset': 'CHORUSNBPb_dw_ite', 'frac': 0.75},
         {'dataset': 'NTVNBDMNFe_dw_ite', 'frac': 0.75, 'cfac': ['MAS']},
         {'dataset': 'NTVNUDMNFe_dw_ite', 'frac': 0.75, 'cfac': ['MAS']},
-        {'dataset': 'NMCPD_dw_ite', 'frac': 0.75},
-        {'dataset': 'BCDMSD_dw_ite', 'frac': 0.75},
-        {'dataset': 'SLACD_dw_ite', 'frac': 0.75},
-        {'dataset': 'NMC', 'frac': 0.75},
-        {'dataset': 'SLACP_dwsh', 'frac': 0.75},
-        {'dataset': 'BCDMSP_dwsh', 'frac': 0.75},
-        {'dataset': 'HERACOMBNCEM', 'frac': 0.75},
-        {'dataset': 'HERACOMBNCEP460', 'frac': 0.75},
-        {'dataset': 'HERACOMBNCEP575', 'frac': 0.75},
-        {'dataset': 'HERACOMBNCEP820', 'frac': 0.75},
-        {'dataset': 'HERACOMBNCEP920', 'frac': 0.75},
-        {'dataset': 'HERACOMBCCEM', 'frac': 0.75},
-        {'dataset': 'HERACOMBCCEP', 'frac': 0.75},
-        {'dataset': 'HERACOMB_SIGMARED_C', 'frac': 0.75},
-        {'dataset': 'HERACOMB_SIGMARED_B', 'frac': 0.75}
+        # {'dataset': 'NMCPD_dw_ite', 'frac': 0.75},
+        # {'dataset': 'BCDMSD_dw_ite', 'frac': 0.75},
+        # {'dataset': 'SLACD_dw_ite', 'frac': 0.75},
+        # {'dataset': 'NMC', 'frac': 0.75},
+        # {'dataset': 'SLACP_dwsh', 'frac': 0.75},
+        # {'dataset': 'BCDMSP_dwsh', 'frac': 0.75},
+        # {'dataset': 'HERACOMBNCEM', 'frac': 0.75},
+        # {'dataset': 'HERACOMBNCEP460', 'frac': 0.75},
+        # {'dataset': 'HERACOMBNCEP575', 'frac': 0.75},
+        # {'dataset': 'HERACOMBNCEP820', 'frac': 0.75},
+        # {'dataset': 'HERACOMBNCEP920', 'frac': 0.75},
+        # {'dataset': 'HERACOMBCCEM', 'frac': 0.75},
+        # {'dataset': 'HERACOMBCCEP', 'frac': 0.75},
+        # {'dataset': 'HERACOMB_SIGMARED_C', 'frac': 0.75},
+        # {'dataset': 'HERACOMB_SIGMARED_B', 'frac': 0.75}
     ]
     inp = dict(dataset_inputs=dsinps, theoryid=200, use_cuts="internal")
     dataset_inputs_loaded_cd_with_cuts = API.dataset_inputs_loaded_cd_with_cuts(**inp)
@@ -79,17 +80,6 @@ def main():
     overall_norms_df = pd.concat(norms_dfs)
     overall_norms_df.index = pd.MultiIndex.from_tuples(overall_norms_df.index)
     print(overall_norms_df.groupby(level=0).head(10))
-        
-def construct_covmat(
-    stat_errors: np.array,
-    sys_errors: pd.DataFrame
-):
-    diagonal = stat_errors ** 2
-    is_uncorr = sys_errors.columns.isin(("UNCORR", "THEORYUNCORR"))
-    diagonal += (sys_errors.loc[:, is_uncorr].to_numpy() ** 2).sum(axis=1)
-
-    corr_sys_mat = sys_errors.loc[:, ~is_uncorr].to_numpy()
-    return np.diag(diagonal) + corr_sys_mat @ corr_sys_mat.T
 
 def get_covmat(
     key,

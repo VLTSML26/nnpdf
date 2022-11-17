@@ -1,0 +1,44 @@
+dataset_inputs:
+  - {dataset: NMCPD_dw_ite, frac: 0.75}
+  - {dataset: BCDMSD_dw_ite, frac: 0.75}
+  - {dataset: CHORUSNUPb_dw_ite, frac: 0.75}
+  - {dataset: CHORUSNBPb_dw_ite, frac: 0.75}
+  - {dataset: NTVNUDMNFe_dw_ite, frac: 0.75, cfac: [MAS]}
+  - {dataset: NTVNBDMNFe_dw_ite, frac: 0.75, cfac: [MAS]}
+  - {dataset: SLACD_dw_ite, frac: 0.75}
+  - {dataset: NMC, frac: 0.75}
+  - {dataset: SLACP_dwsh, frac: 0.75}
+  - {dataset: BCDMSP_dwsh, frac: 0.75}
+  - {dataset: HERACOMBNCEM, frac: 0.75}
+  - {dataset: HERACOMBNCEP460, frac: 0.75}
+  - {dataset: HERACOMBNCEP575, frac: 0.75}
+  - {dataset: HERACOMBNCEP820, frac: 0.75}
+  - {dataset: HERACOMBNCEP920, frac: 0.75}
+  - {dataset: HERACOMBCCEM, frac: 0.75}
+  - {dataset: HERACOMBCCEP, frac: 0.75}
+  - {dataset: HERACOMB_SIGMARED_C, frac: 0.75}
+  - {dataset: HERACOMB_SIGMARED_B, frac: 0.75}
+
+n_display: 10
+impact_datasets:
+  - CHORUSNUPb_dw_ite
+  - CHORUSNBPb_dw_ite
+  - NTVNUDMNFe_dw_ite
+  - NTVNBDMNFe_dw_ite
+
+theoryid: 200
+use_cuts: internal
+
+meta:
+    author: Samuele Voltan
+    title: Impact of underestimation of sys in CHORUS and NUTEV.
+    keywords: [closuretest, inconsistency, systematics]
+
+template_text: |
+
+  For each dataset required, we display the first {@ n_display @} systematics whose underestimation has the maximum impact on the DIS covariance matrix.
+
+  {@ systematics_impact_on_trace_covmat_table @}
+
+actions_:
+  - report(main=True)
