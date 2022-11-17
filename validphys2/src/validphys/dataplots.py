@@ -1528,12 +1528,20 @@ def systematics_norm_vector_normalized_to_data_table(
             norms_list = []
             sys_errors = cd.systematic_errors()
             for key in sys_errors.keys():
-                relative_errors = sys_errors[key].values / cd.central_values.values
-                norms_list += [relative_errors @ relative_errors]
+                try:
+                    relative_errors = sys_errors[key].values / cd.central_values.values
+                    norms_list += [relative_errors @ relative_errors]
+                except:
+                    log.warning('%s not considered in sys norms table.', key)
+                    # sys_matrix = sys_errors[key].values
+                    # cv = cd.central_values.values
+                    # n_cv = cv.shape[-1]
+                    # n_sys = sys_matrix.shape[-1]
+                    # relative_errors = sys_matrix / cv.repeat(n_sys).reshape(n_cv, n_sys)
             norms_list = np.asarray(norms_list).reshape(-1, 1)
             norms_list = StandardScaler().fit_transform(norms_list)
             norms_dict = {
-                (cd.setname, sys_errors.keys()[i]): norm
+                (cd.setname, sys_errors.keys()[i]): np.abs(norm)
                 for i, norm in enumerate(norms_list)
             }
             norms_df = pd.DataFrame.from_dict(norms_dict, orient='index', columns=[value])
