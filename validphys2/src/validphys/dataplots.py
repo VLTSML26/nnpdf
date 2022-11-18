@@ -1538,6 +1538,11 @@ def systematics_norm_vector_normalized_to_data_table(
             keys = np.unique(sys_errors.keys())
             if len(keys) != len(sys_errors.keys()):
                 log.warning('Some systematics appear in form of a matrix.')
+
+            # NOTE: this avoids having empty norms_list (StandardScaler would fail)
+            if keys.any() in UNCORR_KEYS:
+                continue
+            
             for key in keys:
                 # Discard UNCORR and THEORYUNCORR for this purpose
                 if key in UNCORR_KEYS:
