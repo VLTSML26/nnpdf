@@ -16,6 +16,7 @@ dataset_inputs:
   - {dataset: NTVNUDMNFe_dw_ite, frac: 0.75, cfac: [MAS]}
   - {dataset: NTVNBDMNFe_dw_ite, frac: 0.75, cfac: [MAS]}
   - {dataset: DYE886R_dw_ite, frac: 0.75}
+  - {dataset: DYE886P, frac: 0.75, cfac: [QCD]}
   - {dataset: SLACD_dw_ite, frac: 0.75}
   - {dataset: NMC, frac: 0.75}
   - {dataset: SLACP_dwsh, frac: 0.75}
