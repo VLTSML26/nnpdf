@@ -1542,16 +1542,16 @@ def systematics_norm_vector_normalized_to_data_table(
                 # Discard UNCORR and THEORYUNCORR for this purpose
                 if key in UNCORR_KEYS:
                     break
-                try:
-                    relative_errors = sys_errors[key].values / cd.central_values.values
-                    norms_list += [relative_errors @ relative_errors]
-                except:
+                if len(sys_errors[key].shape) != 1:
                     sys_matrix = sys_errors[key].values
                     cv = cd.central_values.values
                     n_cv = cv.shape[-1]
                     n_sys = sys_matrix.shape[-1]
                     relative_errors = sys_matrix / cv.repeat(n_sys).reshape(n_cv, n_sys)
                     norms_list += [np.sum(relative_errors @ relative_errors.T) / n_sys]
+                else:
+                    relative_errors = sys_errors[key].values / cd.central_values.values
+                    norms_list += [relative_errors @ relative_errors]
                     
             norms_list = np.asarray(norms_list).reshape(-1, 1)
             norms_list = StandardScaler().fit_transform(norms_list)
