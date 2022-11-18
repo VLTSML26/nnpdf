@@ -54,6 +54,16 @@ use_cuts: internal
 dataset_inputs:
   from_: fit
 
+lumi_channels:
+  - gg
+  - gq
+  - qq
+  - qqbar
+  - uubar
+  - ddbar
+  - udbar
+  - dubar
+  
 meta:
     author: Samuele Voltan
     title: Closure with missing LHCb sys

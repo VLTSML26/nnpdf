@@ -37,4 +37,15 @@ Replicas
 $\chi^2$ per dataset
 --------------------
 
+### Table
 {@ plot_fits_datasets_chi2 @}
+
+### Cute spider plot
+{@ plot_fits_datasets_chi2_spider @}
+
+Luminosities
+------------
+
+{@ with lumi_channels @}
+{@ plot_lumi1d @}
+{@ endwith @}
