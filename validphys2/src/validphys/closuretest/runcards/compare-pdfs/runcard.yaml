@@ -1,14 +1,14 @@
-fit: lhcb-0point1-sv-001
+fit: maximpact-chorus-sv-001
 
 # to display che chi2: if you want to compare chi2 to other fits, put them here
 fits:
-  - id: lhcb-0point1-sv-001
+  - id: maximpact-chorus-sv-001
     label: "Inconsistent fit"
   - id: level2base-001
     label: "Base lv2 closuretest"
 
 fitsummary:
-  - fit: lhcb-0point1-sv-001
+  - fit: maximpact-chorus-sv-001
     closuretest:
       from_: fit
     genrep:
@@ -33,7 +33,7 @@ fitsummary:
 
 pdf: 220426-sv-003_fakepdf
 pdfs:
-  - {id: lhcb-0point1-sv-001, label: 1/10 of LHCb's sys}
+  - {id: maximpact-chorus-sv-001, label: Removed max CHORUS sys}
   - {id: 220426-sv-003_fakepdf, label: Underlying PDF}
   - {id: level2base-001, label: Base lv2 closuretest}
 Q: 1.651
@@ -70,7 +70,7 @@ lumi_channels:
   
 meta:
     author: Samuele Voltan
-    title: Closure with missing LHCb sys
+    title: Closuretest with missing CHORUS sys
     keywords: [closuretest, inconsistency]
 
 template: compare_report.md
