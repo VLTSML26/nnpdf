@@ -45,7 +45,10 @@ $\chi^2$ per dataset
 
 Luminosities
 ------------
+{@with Energies@}
+### Plots at {@Energytitle@}
 
 {@ with lumi_channels @}
 {@ plot_lumi1d @}
+{@endwith@}
 {@ endwith @}

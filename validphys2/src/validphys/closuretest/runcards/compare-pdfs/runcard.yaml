@@ -54,6 +54,10 @@ use_cuts: internal
 dataset_inputs:
   from_: fit
 
+Energies:
+  - sqrts: 13000
+    Energytitle: "13 TeV"
+    
 lumi_channels:
   - gg
   - gq
