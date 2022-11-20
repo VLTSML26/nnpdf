@@ -48,7 +48,9 @@ Luminosities
 {@with Energies@}
 ### Plots at {@Energytitle@}
 
+{@ with Normalize @}
 {@ with lumi_channels @}
 {@ plot_lumi1d @}
-{@endwith@}
+{@ endwith @}
+{@ endwith @}
 {@ endwith @}

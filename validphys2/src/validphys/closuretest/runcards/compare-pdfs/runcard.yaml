@@ -54,6 +54,9 @@ use_cuts: internal
 dataset_inputs:
   from_: fit
 
+Normalize:
+  normalize_to: 2
+  
 Energies:
   - sqrts: 13000
     Energytitle: "13 TeV"
