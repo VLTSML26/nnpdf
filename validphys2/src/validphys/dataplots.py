@@ -29,7 +29,7 @@ from validphys.results import chi2_stat_labels
 from validphys.plotoptions import get_info, kitable, transform_result
 from validphys import plotutils
 from validphys.utils import sane_groupby_iter, split_ranges, scale_from_grid
-from validphys.covmats_utils import get_missinsys_covmat
+from validphys.covmats_utils import get_missingsys_covmat
 from validphys.covmats import dataset_inputs_covmat_from_systematics
 log = logging.getLogger(__name__)
 
@@ -1503,7 +1503,7 @@ def systematics_impact_on_trace_covmat_table(
                 # Discard UNCORR and THEORYUNCORR for this purpose
                 if key in UNCORR_KEYS:
                     break
-                covmat = get_missinsys_covmat(key, dataset_inputs_loaded_cd_with_cuts, data_input)
+                covmat = get_missingsys_covmat(cd.setname, key, dataset_inputs_loaded_cd_with_cuts, data_input)
                 trace = np.trace(covmat)
                 traces_list += [
                     np.abs(trace - tot_trace) * 100 / tot_trace

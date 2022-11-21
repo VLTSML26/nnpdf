@@ -263,3 +263,27 @@ def plot_procs_covmat(procs_covmat):
 def plot_fitting_covmat_heatmap(procs_fitting_covmat):
     fig = plot_covmat_heatmap(procs_fitting_covmat, "Fitting covmat")
     return fig
+
+@figure
+def plot_missingsys_covmat_heatmap(procs_missingsys_covmat, see_process=None):
+    import numpy as np
+    if see_process is not None:
+        covmat_used = procs_missingsys_covmat[[see_process]].loc[[see_process]]
+        trace = np.format_float_scientific(
+            np.trace(covmat_used.values),
+            precision=3
+        )
+        fig = plot_covmat_heatmap(
+            covmat_used,
+            see_process + " subcovmat: trace = " + trace
+        )
+    else:
+        trace = np.format_float_scientific(
+            np.trace(procs_missingsys_covmat.values),
+            precision=3
+        )
+        fig = plot_covmat_heatmap(
+            procs_missingsys_covmat,
+            "Trace = " + trace
+        )
+    return fig
