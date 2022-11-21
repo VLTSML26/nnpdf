@@ -89,8 +89,9 @@ def construct_covmat(stat_errors: np.array, sys_errors: pd.DataFrame):
     corr_sys_mat = sys_errors.loc[:, ~is_uncorr].to_numpy()
     return np.diag(diagonal) + corr_sys_mat @ corr_sys_mat.T
     
-def get_missinsys_covmat(
-    key,
+def get_missingsys_covmat(
+    kill_exp,
+    kill_key,
     dataset_inputs_loaded_cd_with_cuts,
     data_input,
     use_weights_in_covmat=True,
@@ -103,8 +104,9 @@ def get_missinsys_covmat(
         stat_errors = cd.stat_errors.to_numpy()
         sys_errors = cd.systematic_errors()
         weights.append(np.full_like(stat_errors, dsinp.weight))
-        sys_errors[key] = 0.
         is_intra_dataset_error = sys_errors.columns.isin(INTRA_DATASET_SYS_NAME)
+        if dsinp.name == kill_exp and kill_key != None:
+            sys_errors[kill_key] = 1e-10 * np.random.rand(*sys_errors[kill_key].shape)
         block_diags.append(construct_covmat(
             stat_errors,
             sys_errors.loc[:, is_intra_dataset_error]
