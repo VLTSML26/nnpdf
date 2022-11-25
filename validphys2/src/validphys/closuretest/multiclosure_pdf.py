@@ -54,7 +54,25 @@ def get_centralvalues_mean_and_std(normalize_to, xplotting_grids, fl=0):
     cvs = np.asarray(tmp_list)
     mean_cvs = np.mean(cvs, axis=0)
     std_cvs = np.std(cvs, axis=0)
-    return mean_cvs + np.abs(std_cvs), mean_cvs - np.abs(std_cvs)
+    return mean_cvs + std_cvs, mean_cvs - std_cvs
+
+def uncorrelated_bias(normalize_to, xplotting_grids, fl=0):
+    tmp_list = []
+    gridnorm = xplotting_grids[normalize_to]
+    statsnorm = gridnorm.select_flavour(fl).grid_values
+    cvnorm = statsnorm.central_value()
+    for grid in xplotting_grids:
+        flavour_grid = grid.select_flavour(fl)
+        stats = flavour_grid.grid_values
+        cv = stats.central_value() / cvnorm
+        if np.all(cv == 1.):
+            continue
+        tmp_list += [cv]
+    cvs = np.asarray(tmp_list)
+    mean_cvs = np.mean(cvs, axis=0)
+    bias = np.sum((cvs - cvnorm)**2, axis=0)
+    return mean_cvs + bias, mean_cvs - bias
+
 
 def get_mean_errorbars(xplotting_grids, fl=0):
     tmp_list_up = []

@@ -557,17 +557,17 @@ class BiasVariancePDFPlotter(PDFPlotter):
         pcycler = ax._get_lines.prop_cycler
         #This is ugly but can't think of anything better
 
-        next_prop = next(pcycler)
         cv = stats.central_value()
         xgrid = grid.xgrid
         #Ignore spurious normalization warnings
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', RuntimeWarning)
-            from validphys.closuretest.multiclosure_pdf import get_mean_errorbars, get_centralvalues_mean_and_std
-            err68down, err68up = get_mean_errorbars(self.xplotting_grids, fl=flstate.flindex)
+            from validphys.closuretest.multiclosure_pdf import get_mean_errorbars, get_centralvalues_mean_and_std, uncorrelated_bias
+            variance_up, variance_down = get_mean_errorbars(self.xplotting_grids, fl=flstate.flindex)
 
         #http://stackoverflow.com/questions/5195466/matplotlib-does-not-display-hatching-when-rendering-to-pdf
         hatch = next(hatchit)
+        next_prop = next(pcycler)
         color = next_prop['color']
         cvline, = ax.plot(xgrid, cv, color=color)
         if pdf in self.pdfs_noband:
@@ -575,14 +575,18 @@ class BiasVariancePDFPlotter(PDFPlotter):
             handles.append(cvline)
             return [cv, cv]
         alpha = 0.5
-        ax.fill_between(xgrid, err68up, err68down, color=color, alpha=alpha,
+        next_prop = next(pcycler)
+        color = next_prop['color']
+        ax.fill_between(xgrid, variance_up, variance_down, color=color, alpha=alpha,
                         zorder=1)
 
-        ax.fill_between(xgrid, err68up, err68down, facecolor='None', alpha=alpha,
+        ax.fill_between(xgrid, variance_up, variance_down, facecolor='None', alpha=alpha,
                         edgecolor=color,
                         hatch=hatch,
                         zorder=1)
-        std_up, std_down = get_centralvalues_mean_and_std(self.normalize_to, self.xplotting_grids, fl=flstate.flindex)
+        std_up, std_down = uncorrelated_bias(self.normalize_to, self.xplotting_grids, fl=flstate.flindex)
+        next_prop = next(pcycler)
+        color = next_prop['color']
         ax.plot(xgrid, std_up, linestyle='--', color=color)
         ax.plot(xgrid, std_down, linestyle='--', color=color)
         label = (
@@ -597,7 +601,7 @@ class BiasVariancePDFPlotter(PDFPlotter):
         handles.append(handle)
         labels.append(label)
 
-        return [err68down, err68up]
+        return [variance_up, variance_down]
 
     def legend(self, flstate):
         return flstate.ax.legend(flstate.handles, flstate.labels,
