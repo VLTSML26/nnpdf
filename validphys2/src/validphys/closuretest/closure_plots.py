@@ -271,7 +271,7 @@ def plot_missingsys_covmat_heatmap(procs_missingsys_covmat, see_process=None):
         covmat_used = procs_missingsys_covmat[[see_process]].loc[[see_process]]
         trace = np.format_float_scientific(
             np.trace(covmat_used.values),
-            precision=3
+            precision=10
         )
         fig = plot_covmat_heatmap(
             covmat_used,
@@ -280,7 +280,7 @@ def plot_missingsys_covmat_heatmap(procs_missingsys_covmat, see_process=None):
     else:
         trace = np.format_float_scientific(
             np.trace(procs_missingsys_covmat.values),
-            precision=3
+            precision=10
         )
         fig = plot_covmat_heatmap(
             procs_missingsys_covmat,

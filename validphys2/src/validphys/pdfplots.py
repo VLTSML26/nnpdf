@@ -227,7 +227,6 @@ class UncertaintyPDFPlotter(PDFPlotter):
         stats = grid.select_flavour(flindex).grid_values
 
         res = stats.std_error()
-
         ax.plot(grid.xgrid, res, label=pdf.label)
 
         return res
@@ -514,6 +513,123 @@ def plot_pdfs(
     interval is being plotted in the legend labels.
     """
     yield from BandPDFPlotter(
+        pdfs,
+        xplotting_grids,
+        xscale,
+        normalize_to,
+        ymin,
+        ymax,
+        pdfs_noband=pdfs_noband,
+        show_mc_errors=show_mc_errors,
+        legend_stat_labels=legend_stat_labels,
+    )
+
+class BiasVariancePDFPlotter(PDFPlotter):
+    def __init__(
+        self,
+        *args,
+        pdfs_noband=None,
+        show_mc_errors=True,
+        legend_stat_labels=True,
+        **kwargs
+    ):
+        if pdfs_noband is None:
+            pdfs_noband = []
+        self.pdfs_noband = pdfs_noband
+        self.show_mc_errors = show_mc_errors
+        self.legend_stat_labels = legend_stat_labels
+        super().__init__(*args, **kwargs)
+
+    def setup_flavour(self, flstate):
+        flstate.handles=[]
+        flstate.labels=[]
+        flstate.hatchit=plotutils.hatch_iter()
+
+    def draw(self, pdf, grid, flstate):
+        if self.pdfs[self.normalize_to].name != pdf.name:
+            return
+        ax = flstate.ax
+        hatchit = flstate.hatchit
+        labels = flstate.labels
+        handles = flstate.handles
+        # Take only the flavours we are interested in
+        stats = grid.select_flavour(flstate.flindex).grid_values
+        pcycler = ax._get_lines.prop_cycler
+        #This is ugly but can't think of anything better
+
+        next_prop = next(pcycler)
+        cv = stats.central_value()
+        xgrid = grid.xgrid
+        #Ignore spurious normalization warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', RuntimeWarning)
+            from validphys.closuretest.multiclosure_pdf import get_mean_errorbars
+            err68down, err68up = get_mean_errorbars(self.xplotting_grids, fl=flstate.flindex)
+
+        #http://stackoverflow.com/questions/5195466/matplotlib-does-not-display-hatching-when-rendering-to-pdf
+        hatch = next(hatchit)
+        color = next_prop['color']
+        cvline, = ax.plot(xgrid, cv, color=color)
+        if pdf in self.pdfs_noband:
+            labels.append(pdf.label)
+            handles.append(cvline)
+            return [cv, cv]
+        alpha = 0.5
+        ax.fill_between(xgrid, err68up, err68down, color=color, alpha=alpha,
+                        zorder=1)
+
+        ax.fill_between(xgrid, err68up, err68down, facecolor='None', alpha=alpha,
+                        edgecolor=color,
+                        hatch=hatch,
+                        zorder=1)
+        if isinstance(stats, MCStats) and self.show_mc_errors:
+            errorstdup, errorstddown = stats.errorbarstd()
+            ax.plot(xgrid, errorstdup, linestyle='--', color=color)
+            ax.plot(xgrid, errorstddown, linestyle='--', color=color)
+            label = (
+                rf"{pdf.label} ($68\%$ c.l.+$1\sigma$)"
+                if self.legend_stat_labels
+                else pdf.label
+            )
+            outer = True
+        else:
+            outer = False
+            label = (
+                rf"{pdf.label} ($68\%$ c.l.)"
+                if self.legend_stat_labels
+                else pdf.label
+            )
+        handle = plotutils.HandlerSpec(color=color, alpha=alpha,
+                                               hatch=hatch,
+                                               outer=outer)
+        handles.append(handle)
+        labels.append(label)
+
+        return [err68down, err68up]
+
+    def legend(self, flstate):
+        return flstate.ax.legend(flstate.handles, flstate.labels,
+                                 handler_map={plotutils.HandlerSpec:
+                                             plotutils.ComposedHandler()
+                                             }
+                                 )
+
+@figuregen
+@check_pdf_normalize_to
+@check_pdfs_noband
+@check_scale("xscale", allow_none=True)
+def plot_biasvariance_underlyingpdf(
+    pdfs,
+    xplotting_grids,
+    xscale: (str, type(None)) = None,
+    normalize_to: (int, str, type(None)) = None,
+    ymin=None,
+    ymax=None,
+    pdfs_noband: (list, type(None)) = None,
+    show_mc_errors: bool = False,
+    legend_stat_labels: bool = True,
+):
+    yield from BiasVariancePDFPlotter(
         pdfs,
         xplotting_grids,
         xscale,

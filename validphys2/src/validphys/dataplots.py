@@ -1425,7 +1425,6 @@ def table_xq2_numpoints(
         # try:
         #     assert commondata.ndata == len(fitted[1]) + len(masked[1])
         # except:
-        #     import ipdb; ipdb.set_trace()
         if commondata.name in highlight_datasets:
             len_outofsample += commondata.ndata
             # len_outofsample_with_cuts += len(fitted[0])
