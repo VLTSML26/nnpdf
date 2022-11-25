@@ -49,14 +49,12 @@ def get_centralvalues_mean_and_std(normalize_to, xplotting_grids, fl=0):
         stats = flavour_grid.grid_values
         cv = stats.central_value() / cvnorm
         if np.all(cv == 1.):
-            break
+            continue
         tmp_list += [cv]
-        # xgrid = grid.xgrid
-        # err_up, err_down = stats.errorbarstd()
     cvs = np.asarray(tmp_list)
     mean_cvs = np.mean(cvs, axis=0)
     std_cvs = np.std(cvs, axis=0)
-    return mean_cvs, std_cvs
+    return mean_cvs + np.abs(std_cvs), mean_cvs - np.abs(std_cvs)
 
 def get_mean_errorbars(xplotting_grids, fl=0):
     tmp_list_up = []

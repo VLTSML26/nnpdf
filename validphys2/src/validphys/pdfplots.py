@@ -563,7 +563,7 @@ class BiasVariancePDFPlotter(PDFPlotter):
         #Ignore spurious normalization warnings
         with warnings.catch_warnings():
             warnings.simplefilter('ignore', RuntimeWarning)
-            from validphys.closuretest.multiclosure_pdf import get_mean_errorbars
+            from validphys.closuretest.multiclosure_pdf import get_mean_errorbars, get_centralvalues_mean_and_std
             err68down, err68up = get_mean_errorbars(self.xplotting_grids, fl=flstate.flindex)
 
         #http://stackoverflow.com/questions/5195466/matplotlib-does-not-display-hatching-when-rendering-to-pdf
@@ -582,23 +582,15 @@ class BiasVariancePDFPlotter(PDFPlotter):
                         edgecolor=color,
                         hatch=hatch,
                         zorder=1)
-        if isinstance(stats, MCStats) and self.show_mc_errors:
-            errorstdup, errorstddown = stats.errorbarstd()
-            ax.plot(xgrid, errorstdup, linestyle='--', color=color)
-            ax.plot(xgrid, errorstddown, linestyle='--', color=color)
-            label = (
-                rf"{pdf.label} ($68\%$ c.l.+$1\sigma$)"
-                if self.legend_stat_labels
-                else pdf.label
-            )
-            outer = True
-        else:
-            outer = False
-            label = (
-                rf"{pdf.label} ($68\%$ c.l.)"
-                if self.legend_stat_labels
-                else pdf.label
-            )
+        std_up, std_down = get_centralvalues_mean_and_std(self.normalize_to, self.xplotting_grids, fl=flstate.flindex)
+        ax.plot(xgrid, std_up, linestyle='--', color=color)
+        ax.plot(xgrid, std_down, linestyle='--', color=color)
+        label = (
+            rf"{pdf.label}"
+            if self.legend_stat_labels
+            else pdf.label
+        )
+        outer = True
         handle = plotutils.HandlerSpec(color=color, alpha=alpha,
                                                hatch=hatch,
                                                outer=outer)
