@@ -62,7 +62,7 @@ def get_mean_errorbars(xplotting_grids, fl=0):
     for grid in xplotting_grids:
         flavour_grid = grid.select_flavour(fl)
         stats = flavour_grid.grid_values
-        err_up, err_down = stats.errorbar68()
+        err_up, err_down = stats.errorbarstd()
         tmp_list_up += [err_up]
         tmp_list_down += [err_down]
     ups = np.asarray(tmp_list_up)
