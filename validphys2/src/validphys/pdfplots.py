@@ -584,11 +584,16 @@ class BiasVariancePDFPlotter(PDFPlotter):
                         edgecolor=color,
                         hatch=hatch,
                         zorder=1)
-        std_up, std_down = uncorrelated_bias(self.normalize_to, self.xplotting_grids, fl=flstate.flindex)
+        bias_up, bias_down = uncorrelated_bias(self.normalize_to, self.xplotting_grids, fl=flstate.flindex)
         next_prop = next(pcycler)
         color = next_prop['color']
-        ax.plot(xgrid, std_up, linestyle='--', color=color)
-        ax.plot(xgrid, std_down, linestyle='--', color=color)
+        ax.plot(xgrid, bias_up, linestyle='--', color=color)
+        ax.plot(xgrid, bias_down, linestyle='--', color=color)
+        std_up, std_down = get_centralvalues_mean_and_std(self.normalize_to, self.xplotting_grids, fl=flstate.flindex)
+        next_prop = next(pcycler)
+        color = next_prop['color']
+        ax.plot(xgrid, std_up, color=color)
+        ax.plot(xgrid, std_down, color=color)
         label = (
             rf"{pdf.label}"
             if self.legend_stat_labels
