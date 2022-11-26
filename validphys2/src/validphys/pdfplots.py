@@ -642,6 +642,120 @@ def plot_biasvariance_underlyingpdf(
         legend_stat_labels=legend_stat_labels,
     )
 
+class Multiclosure1sigmaBandPDFPlotter(PDFPlotter):
+    def __init__(
+        self,
+        *args,
+        show_mc_errors=True,
+        legend_stat_labels=True,
+        **kwargs
+    ):
+        self.show_mc_errors = show_mc_errors
+        self.legend_stat_labels = legend_stat_labels
+        super().__init__(*args, **kwargs)
+
+    def setup_flavour(self, flstate):
+        flstate.handles=[]
+        flstate.labels=[]
+        flstate.hatchit=plotutils.hatch_iter()
+
+    def draw(self, pdf, grid, flstate):
+        if self.pdfs[self.normalize_to].name != pdf.name:
+            return
+        from validphys.closuretest.multiclosure_pdf import multiclosure1sigmaband, multiclosure_uncorrelatedbias, multiclosure_variance
+        err68up, err68down = multiclosure1sigmaband(self.xplotting_grids, fl=flstate.flindex)
+        bias_up, bias_down = multiclosure_uncorrelatedbias(self.normalize_to, self.xplotting_grids, fl=flstate.flindex)
+        variance_up, variance_down = multiclosure_variance(self.normalize_to, self.xplotting_grids, fl=flstate.flindex)
+        ax = flstate.ax
+        hatchit = flstate.hatchit
+        labels = flstate.labels
+        handles = flstate.handles
+        # Take only the flavours we are interested in
+        stats = grid.select_flavour(flstate.flindex).grid_values
+        pcycler = ax._get_lines.prop_cycler
+        #This is ugly but can't think of anything better
+
+        cv = stats.central_value()
+        xgrid = grid.xgrid
+        alpha = 0.5
+        outer = True
+        hatch = next(hatchit)
+
+        # 1sigma band
+        next_prop = next(pcycler)
+        color = next_prop['color']
+        ax.fill_between(xgrid, err68up, err68down, color=color, alpha=alpha,
+                        zorder=1)
+
+        ax.fill_between(xgrid, err68up, err68down, facecolor='None', alpha=alpha,
+                        edgecolor=color,
+                        hatch=hatch,
+                        zorder=1)
+        label = r"1$\sigma$ band"
+        handle = plotutils.HandlerSpec(color=color, alpha=alpha,
+                                               hatch=hatch,
+                                               outer=outer)
+        handles.append(handle)
+        labels.append(label)
+
+        # underlying pdf
+        next_prop = next(pcycler)
+        color = next_prop['color']
+        cvline, = ax.plot(xgrid, cv, color=color)
+        labels.append(pdf.label)
+        handles.append(cvline)
+
+        # bias
+        next_prop = next(pcycler)
+        color = next_prop['color']
+        biasline, = ax.plot(xgrid, bias_up, color=color)
+        ax.plot(xgrid, bias_down, color=color)
+        label = "Bias"
+        handles.append(biasline)
+        labels.append(label)
+
+        # variance
+        next_prop = next(pcycler)
+        color = next_prop['color']
+        varianceline, = ax.plot(xgrid, variance_up, color=color)
+        ax.plot(xgrid, variance_down, color=color)
+        label = "Variance"
+        handles.append(varianceline)
+        labels.append(label)
+
+        return [err68up, err68down]
+
+    def legend(self, flstate):
+        return flstate.ax.legend(flstate.handles, flstate.labels,
+                                 handler_map={plotutils.HandlerSpec:
+                                             plotutils.ComposedHandler()
+                                             }
+                                 )
+
+@figuregen
+@check_pdf_normalize_to
+@check_scale("xscale", allow_none=True)
+def plot_multiclosure_1sigmaband_underlyingpdf(
+    pdfs,
+    xplotting_grids,
+    xscale: (str, type(None)) = None,
+    normalize_to: (int, str, type(None)) = None,
+    ymin=None,
+    ymax=None,
+    show_mc_errors: bool = False,
+    legend_stat_labels: bool = True,
+):
+    yield from Multiclosure1sigmaBandPDFPlotter(
+        pdfs,
+        xplotting_grids,
+        xscale,
+        normalize_to,
+        ymin,
+        ymax,
+        show_mc_errors=show_mc_errors,
+        legend_stat_labels=legend_stat_labels,
+    )
+
 class FlavoursPlotter(AllFlavoursPlotter, BandPDFPlotter):
     def get_title(self, parton_name):
         return f'{self.pdfs[0]} Q={self.Q : .1f} GeV'

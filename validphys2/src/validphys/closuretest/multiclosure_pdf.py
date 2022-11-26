@@ -39,7 +39,7 @@ def internal_singlet_gluon_xgrid(multiclosure_nx=4):
         axis=0,
     )
 
-def get_centralvalues_mean_and_std(normalize_to, xplotting_grids, fl=0):
+def multiclosure_variance(normalize_to, xplotting_grids, fl=0):
     tmp_list = []
     gridnorm = xplotting_grids[normalize_to]
     statsnorm = gridnorm.select_flavour(fl).grid_values
@@ -52,11 +52,11 @@ def get_centralvalues_mean_and_std(normalize_to, xplotting_grids, fl=0):
             continue
         tmp_list += [cv]
     cvs = np.asarray(tmp_list)
-    mean_cvs = np.mean(cvs, axis=0)
+    # mean_cvs = np.mean(cvs, axis=0)
     std_cvs = np.std(cvs, axis=0)
-    return mean_cvs + std_cvs, mean_cvs - std_cvs
+    return cvnorm + std_cvs, cvnorm - std_cvs
 
-def uncorrelated_bias(normalize_to, xplotting_grids, fl=0):
+def multiclosure_uncorrelatedbias(normalize_to, xplotting_grids, fl=0):
     tmp_list = []
     gridnorm = xplotting_grids[normalize_to]
     statsnorm = gridnorm.select_flavour(fl).grid_values
@@ -69,18 +69,30 @@ def uncorrelated_bias(normalize_to, xplotting_grids, fl=0):
             continue
         tmp_list += [cv]
     cvs = np.asarray(tmp_list)
-    mean_cvs = np.mean(cvs, axis=0)
+    # mean_cvs = np.mean(cvs, axis=0)
     bias = np.sum((cvs - cvnorm)**2, axis=0)
-    return mean_cvs + bias, mean_cvs - bias
+    return cvnorm + bias, cvnorm - bias
 
-
-def get_mean_errorbars(xplotting_grids, fl=0):
+def multiclosure1sigmaband(xplotting_grids, fl=0):
     tmp_list_up = []
     tmp_list_down = []
     for grid in xplotting_grids:
         flavour_grid = grid.select_flavour(fl)
         stats = flavour_grid.grid_values
         err_up, err_down = stats.errorbarstd()
+        tmp_list_up += [err_up]
+        tmp_list_down += [err_down]
+    ups = np.asarray(tmp_list_up)
+    downs = np.asarray(tmp_list_down)
+    return np.mean(ups, axis=0), np.mean(downs, axis=0)
+
+def multiclosure68band(xplotting_grids, fl=0):
+    tmp_list_up = []
+    tmp_list_down = []
+    for grid in xplotting_grids:
+        flavour_grid = grid.select_flavour(fl)
+        stats = flavour_grid.grid_values
+        err_up, err_down = stats.errorbar68()
         tmp_list_up += [err_up]
         tmp_list_down += [err_down]
     ups = np.asarray(tmp_list_up)
