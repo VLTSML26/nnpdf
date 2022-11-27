@@ -39,7 +39,12 @@ def internal_singlet_gluon_xgrid(multiclosure_nx=4):
         axis=0,
     )
 
-def multiclosure_variance(normalize_to, xplotting_grids, fl=0):
+def multiclosure_variance(
+    normalize_to, 
+    xplotting_grids, 
+    fl=0,
+    around_mean: bool = False
+):
     tmp_list = []
     gridnorm = xplotting_grids[normalize_to]
     statsnorm = gridnorm.select_flavour(fl).grid_values
@@ -52,11 +57,19 @@ def multiclosure_variance(normalize_to, xplotting_grids, fl=0):
             continue
         tmp_list += [cv]
     cvs = np.asarray(tmp_list)
-    # mean_cvs = np.mean(cvs, axis=0)
     std_cvs = np.std(cvs, axis=0)
-    return cvnorm + std_cvs, cvnorm - std_cvs
+    if around_mean:
+        mean_cvs = np.mean(cvs, axis=0)
+        return mean_cvs + std_cvs, mean_cvs - std_cvs
+    else:
+        return cvnorm + std_cvs, cvnorm - std_cvs
 
-def multiclosure_uncorrelatedbias(normalize_to, xplotting_grids, fl=0):
+def multiclosure_uncorrelatedbias(
+    normalize_to,
+    xplotting_grids,
+    fl=0,
+    around_mean: bool = False
+):
     tmp_list = []
     gridnorm = xplotting_grids[normalize_to]
     statsnorm = gridnorm.select_flavour(fl).grid_values
@@ -69,9 +82,12 @@ def multiclosure_uncorrelatedbias(normalize_to, xplotting_grids, fl=0):
             continue
         tmp_list += [cv]
     cvs = np.asarray(tmp_list)
-    # mean_cvs = np.mean(cvs, axis=0)
     bias = np.sum((cvs - cvnorm)**2, axis=0)
-    return cvnorm + bias, cvnorm - bias
+    if around_mean:
+        mean_cvs = np.mean(cvs, axis=0)
+        return mean_cvs + bias, mean_cvs - bias
+    else:
+        return cvnorm + bias, cvnorm - bias
 
 def multiclosure1sigmaband(xplotting_grids, fl=0):
     tmp_list_up = []

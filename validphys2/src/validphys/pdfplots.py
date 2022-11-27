@@ -524,123 +524,6 @@ def plot_pdfs(
         legend_stat_labels=legend_stat_labels,
     )
 
-class BiasVariancePDFPlotter(PDFPlotter):
-    def __init__(
-        self,
-        *args,
-        pdfs_noband=None,
-        show_mc_errors=True,
-        legend_stat_labels=True,
-        **kwargs
-    ):
-        if pdfs_noband is None:
-            pdfs_noband = []
-        self.pdfs_noband = pdfs_noband
-        self.show_mc_errors = show_mc_errors
-        self.legend_stat_labels = legend_stat_labels
-        super().__init__(*args, **kwargs)
-
-    def setup_flavour(self, flstate):
-        flstate.handles=[]
-        flstate.labels=[]
-        flstate.hatchit=plotutils.hatch_iter()
-
-    def draw(self, pdf, grid, flstate):
-        if self.pdfs[self.normalize_to].name != pdf.name:
-            return
-        ax = flstate.ax
-        hatchit = flstate.hatchit
-        labels = flstate.labels
-        handles = flstate.handles
-        # Take only the flavours we are interested in
-        stats = grid.select_flavour(flstate.flindex).grid_values
-        pcycler = ax._get_lines.prop_cycler
-        #This is ugly but can't think of anything better
-
-        cv = stats.central_value()
-        xgrid = grid.xgrid
-        #Ignore spurious normalization warnings
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore', RuntimeWarning)
-            from validphys.closuretest.multiclosure_pdf import get_mean_errorbars, get_centralvalues_mean_and_std, uncorrelated_bias
-            variance_up, variance_down = get_mean_errorbars(self.xplotting_grids, fl=flstate.flindex)
-
-        #http://stackoverflow.com/questions/5195466/matplotlib-does-not-display-hatching-when-rendering-to-pdf
-        hatch = next(hatchit)
-        next_prop = next(pcycler)
-        color = next_prop['color']
-        cvline, = ax.plot(xgrid, cv, color=color)
-        if pdf in self.pdfs_noband:
-            labels.append(pdf.label)
-            handles.append(cvline)
-            return [cv, cv]
-        alpha = 0.5
-        next_prop = next(pcycler)
-        color = next_prop['color']
-        ax.fill_between(xgrid, variance_up, variance_down, color=color, alpha=alpha,
-                        zorder=1)
-
-        ax.fill_between(xgrid, variance_up, variance_down, facecolor='None', alpha=alpha,
-                        edgecolor=color,
-                        hatch=hatch,
-                        zorder=1)
-        bias_up, bias_down = uncorrelated_bias(self.normalize_to, self.xplotting_grids, fl=flstate.flindex)
-        next_prop = next(pcycler)
-        color = next_prop['color']
-        ax.plot(xgrid, bias_up, linestyle='--', color=color)
-        ax.plot(xgrid, bias_down, linestyle='--', color=color)
-        std_up, std_down = get_centralvalues_mean_and_std(self.normalize_to, self.xplotting_grids, fl=flstate.flindex)
-        next_prop = next(pcycler)
-        color = next_prop['color']
-        ax.plot(xgrid, std_up, color=color)
-        ax.plot(xgrid, std_down, color=color)
-        label = (
-            rf"{pdf.label}"
-            if self.legend_stat_labels
-            else pdf.label
-        )
-        outer = True
-        handle = plotutils.HandlerSpec(color=color, alpha=alpha,
-                                               hatch=hatch,
-                                               outer=outer)
-        handles.append(handle)
-        labels.append(label)
-
-        return [variance_up, variance_down]
-
-    def legend(self, flstate):
-        return flstate.ax.legend(flstate.handles, flstate.labels,
-                                 handler_map={plotutils.HandlerSpec:
-                                             plotutils.ComposedHandler()
-                                             }
-                                 )
-
-@figuregen
-@check_pdf_normalize_to
-@check_pdfs_noband
-@check_scale("xscale", allow_none=True)
-def plot_biasvariance_underlyingpdf(
-    pdfs,
-    xplotting_grids,
-    xscale: (str, type(None)) = None,
-    normalize_to: (int, str, type(None)) = None,
-    ymin=None,
-    ymax=None,
-    pdfs_noband: (list, type(None)) = None,
-    show_mc_errors: bool = False,
-    legend_stat_labels: bool = True,
-):
-    yield from BiasVariancePDFPlotter(
-        pdfs,
-        xplotting_grids,
-        xscale,
-        normalize_to,
-        ymin,
-        ymax,
-        pdfs_noband=pdfs_noband,
-        show_mc_errors=show_mc_errors,
-        legend_stat_labels=legend_stat_labels,
-    )
 
 class Multiclosure1sigmaBandPDFPlotter(PDFPlotter):
     def __init__(
@@ -754,6 +637,112 @@ def plot_multiclosure_1sigmaband_underlyingpdf(
         ymax,
         show_mc_errors=show_mc_errors,
         legend_stat_labels=legend_stat_labels,
+    )
+
+class MulticlosureBiasVariancePDFPlotter(PDFPlotter):
+    def __init__(
+        self,
+        *args,
+        around_mean=True,
+        **kwargs
+    ):
+        self.around_mean = around_mean
+        super().__init__(*args, **kwargs)
+
+    def setup_flavour(self, flstate):
+        flstate.handles=[]
+        flstate.labels=[]
+        flstate.hatchit=plotutils.hatch_iter()
+
+    def draw(self, pdf, grid, flstate):
+        if self.pdfs[self.normalize_to].name != pdf.name:
+            return
+        from validphys.closuretest.multiclosure_pdf import multiclosure_uncorrelatedbias, multiclosure_variance
+        bias_up, bias_down = multiclosure_uncorrelatedbias(
+            self.normalize_to, 
+            self.xplotting_grids, 
+            fl=flstate.flindex, 
+            around_mean=self.around_mean
+        )
+        variance_up, variance_down = multiclosure_variance(
+            self.normalize_to,
+            self.xplotting_grids, 
+            fl=flstate.flindex,
+            around_mean=self.around_mean
+        )
+        ax = flstate.ax
+        hatchit = flstate.hatchit
+        labels = flstate.labels
+        handles = flstate.handles
+        stats = grid.select_flavour(flstate.flindex).grid_values
+        pcycler = ax._get_lines.prop_cycler
+
+        cv = stats.central_value()
+        xgrid = grid.xgrid
+        alpha = 0.5
+        outer = True
+        hatch = next(hatchit)
+
+        # underlying pdf
+        next_prop = next(pcycler)
+        color = next_prop['color']
+        cvline, = ax.plot(xgrid, cv, color=color)
+        labels.append(pdf.label)
+        handles.append(cvline)
+
+        # variance
+        next_prop = next(pcycler)
+        color = next_prop['color']
+        ax.fill_between(xgrid, variance_up, variance_down, color=color, alpha=alpha,
+                        zorder=1)
+
+        ax.fill_between(xgrid, variance_up, variance_down, facecolor='None', alpha=alpha,
+                        edgecolor=color,
+                        hatch=hatch,
+                        zorder=1)
+        label = "Variance"
+        handle = plotutils.HandlerSpec(color=color, alpha=alpha,
+                                               hatch=hatch,
+                                               outer=outer)
+        handles.append(handle)
+        labels.append(label)
+
+        # bias
+        biasline, = ax.plot(xgrid, bias_up, linestyle="--", color=color)
+        ax.plot(xgrid, bias_down, linestyle="--", color=color)
+        label = "Bias"
+        handles.append(biasline)
+        labels.append(label)
+
+        return [variance_up, variance_down]
+
+    def legend(self, flstate):
+        return flstate.ax.legend(flstate.handles, flstate.labels,
+                                 handler_map={plotutils.HandlerSpec:
+                                             plotutils.ComposedHandler()
+                                             }
+                                 )
+
+@figuregen
+@check_pdf_normalize_to
+@check_scale("xscale", allow_none=True)
+def plot_multiclosure_biasvariance_underlyingpdf(
+    pdfs,
+    xplotting_grids,
+    xscale: (str, type(None)) = None,
+    normalize_to: (int, str, type(None)) = None,
+    ymin=None,
+    ymax=None,
+    around_mean: bool = True,
+):
+    yield from MulticlosureBiasVariancePDFPlotter(
+        pdfs,
+        xplotting_grids,
+        xscale,
+        normalize_to,
+        ymin,
+        ymax,
+        around_mean=around_mean,
     )
 
 class FlavoursPlotter(AllFlavoursPlotter, BandPDFPlotter):
