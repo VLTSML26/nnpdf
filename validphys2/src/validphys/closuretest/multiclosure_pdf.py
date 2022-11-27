@@ -89,6 +89,26 @@ def multiclosure_uncorrelatedbias(
     else:
         return cvnorm + bias, cvnorm - bias
 
+def multiclosure_meancvs(
+    normalize_to,
+    xplotting_grids,
+    fl=0,
+):
+    tmp_list = []
+    gridnorm = xplotting_grids[normalize_to]
+    statsnorm = gridnorm.select_flavour(fl).grid_values
+    cvnorm = statsnorm.central_value()
+    for grid in xplotting_grids:
+        flavour_grid = grid.select_flavour(fl)
+        stats = flavour_grid.grid_values
+        cv = stats.central_value() / cvnorm
+        if np.all(cv == 1.):
+            continue
+        tmp_list += [cv]
+    cvs = np.asarray(tmp_list)
+    mean_cvs = np.mean(cvs, axis=0)
+    return mean_cvs
+
 def multiclosure1sigmaband(xplotting_grids, fl=0):
     tmp_list_up = []
     tmp_list_down = []

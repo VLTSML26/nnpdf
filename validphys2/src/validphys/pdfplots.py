@@ -657,7 +657,7 @@ class MulticlosureBiasVariancePDFPlotter(PDFPlotter):
     def draw(self, pdf, grid, flstate):
         if self.pdfs[self.normalize_to].name != pdf.name:
             return
-        from validphys.closuretest.multiclosure_pdf import multiclosure_uncorrelatedbias, multiclosure_variance
+        from validphys.closuretest.multiclosure_pdf import multiclosure_uncorrelatedbias, multiclosure_variance, multiclosure_meancvs
         bias_up, bias_down = multiclosure_uncorrelatedbias(
             self.normalize_to, 
             self.xplotting_grids, 
@@ -669,6 +669,11 @@ class MulticlosureBiasVariancePDFPlotter(PDFPlotter):
             self.xplotting_grids, 
             fl=flstate.flindex,
             around_mean=self.around_mean
+        )
+        mean_cvs = multiclosure_meancvs(
+            self.normalize_to,
+            self._xplotting_grids,
+            fl=flstate.flindex
         )
         ax = flstate.ax
         hatchit = flstate.hatchit
@@ -690,9 +695,12 @@ class MulticlosureBiasVariancePDFPlotter(PDFPlotter):
         labels.append(pdf.label)
         handles.append(cvline)
 
-        # variance
+        # mean cvs
         next_prop = next(pcycler)
         color = next_prop['color']
+        ax.plot(xgrid, mean_cvs, color=color)
+
+        # variance
         ax.fill_between(xgrid, variance_up, variance_down, color=color, alpha=alpha,
                         zorder=1)
 
@@ -700,7 +708,7 @@ class MulticlosureBiasVariancePDFPlotter(PDFPlotter):
                         edgecolor=color,
                         hatch=hatch,
                         zorder=1)
-        label = "Variance"
+        label = "Fits mean CVs + Variance"
         handle = plotutils.HandlerSpec(color=color, alpha=alpha,
                                                hatch=hatch,
                                                outer=outer)
