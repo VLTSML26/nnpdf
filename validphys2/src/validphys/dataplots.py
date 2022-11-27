@@ -567,13 +567,30 @@ def plot_fits_chi2_spider(
     for fit, fitchi2, fitgroup in zip(fits, fits_groups_chi2, fits_groups_data):
         exchi2 = [group_res.central_result / group_res.ndata for group_res in fitchi2]
         xticks = [group.name for group in fitgroup]
-
         ax = plotutils.spiderplot(xticks, exchi2, fit)
 
     ax.set_title(rf"$\chi^2$ by {processed_metadata_group}")
 
     return fig
 
+@figure
+def mean_fits_chi2_spider(
+    fits_groups_chi2, fits_groups_data, processed_metadata_group
+):
+    fig = plt.figure(figsize=(12, 12))
+    ax = fig.add_subplot(projection="polar")
+
+    chi2list = []
+    for fitchi2, fitgroup in zip(fits_groups_chi2, fits_groups_data):
+        thisfit_list = [group_res.central_result / group_res.ndata for group_res in fitchi2]
+        chi2list += [thisfit_list]
+        xticks = [group.name for group in fitgroup]
+    
+    mean_chi2s = np.mean(np.asarray(chi2list), axis=0)
+    label = "Average across fits"
+    ax = plotutils.spiderplot(xticks, mean_chi2s, label)
+    ax.set_title(rf"$\chi^2$ by {processed_metadata_group}")
+    return fig
 
 @figure
 def plot_fits_phi_spider(
