@@ -9,7 +9,7 @@ fit: CHORUSQEDRADCOR1-sv-001
 normalize_to: 1
 t0pdfset: 220426-sv-003_fakepdf
 pdfs:
-  - 220426-sv-003_fakepdf
+  - {id: 220426-sv-003_fakepdf, label: Underlying PDF}
   - CHORUSQEDRADCOR1-sv-001
   - CHORUSQEDRADCOR1-sv-002
 
