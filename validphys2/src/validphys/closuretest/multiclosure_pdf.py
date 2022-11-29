@@ -39,101 +39,6 @@ def internal_singlet_gluon_xgrid(multiclosure_nx=4):
         axis=0,
     )
 
-def multiclosure_variance(
-    normalize_to, 
-    xplotting_grids, 
-    fl=0,
-    around_mean: bool = False
-):
-    tmp_list = []
-    gridnorm = xplotting_grids[normalize_to]
-    statsnorm = gridnorm.select_flavour(fl).grid_values
-    cvnorm = statsnorm.central_value()
-    for grid in xplotting_grids:
-        flavour_grid = grid.select_flavour(fl)
-        stats = flavour_grid.grid_values
-        cv = stats.central_value() / cvnorm
-        if np.all(cv == 1.):
-            continue
-        tmp_list += [cv]
-    cvs = np.asarray(tmp_list)
-    std_cvs = np.std(cvs, axis=0)
-    if around_mean:
-        mean_cvs = np.mean(cvs, axis=0)
-        return mean_cvs + std_cvs, mean_cvs - std_cvs
-    else:
-        return cvnorm + std_cvs, cvnorm - std_cvs
-
-def multiclosure_uncorrelatedbias(
-    normalize_to,
-    xplotting_grids,
-    fl=0,
-    around_mean: bool = False
-):
-    tmp_list = []
-    gridnorm = xplotting_grids[normalize_to]
-    statsnorm = gridnorm.select_flavour(fl).grid_values
-    cvnorm = statsnorm.central_value()
-    for grid in xplotting_grids:
-        flavour_grid = grid.select_flavour(fl)
-        stats = flavour_grid.grid_values
-        cv = stats.central_value() / cvnorm
-        if np.all(cv == 1.):
-            continue
-        tmp_list += [cv]
-    cvs = np.asarray(tmp_list)
-    bias = np.sum((cvs - cvnorm)**2, axis=0)
-    if around_mean:
-        mean_cvs = np.mean(cvs, axis=0)
-        return mean_cvs + bias, mean_cvs - bias
-    else:
-        return cvnorm + bias, cvnorm - bias
-
-def multiclosure_meancvs(
-    normalize_to,
-    xplotting_grids,
-    fl=0,
-):
-    tmp_list = []
-    gridnorm = xplotting_grids[normalize_to]
-    statsnorm = gridnorm.select_flavour(fl).grid_values
-    cvnorm = statsnorm.central_value()
-    for grid in xplotting_grids:
-        flavour_grid = grid.select_flavour(fl)
-        stats = flavour_grid.grid_values
-        cv = stats.central_value() / cvnorm
-        if np.all(cv == 1.):
-            continue
-        tmp_list += [cv]
-    cvs = np.asarray(tmp_list)
-    mean_cvs = np.mean(cvs, axis=0)
-    return mean_cvs
-
-def multiclosure1sigmaband(xplotting_grids, fl=0):
-    tmp_list_up = []
-    tmp_list_down = []
-    for grid in xplotting_grids:
-        flavour_grid = grid.select_flavour(fl)
-        stats = flavour_grid.grid_values
-        err_up, err_down = stats.errorbarstd()
-        tmp_list_up += [err_up]
-        tmp_list_down += [err_down]
-    ups = np.asarray(tmp_list_up)
-    downs = np.asarray(tmp_list_down)
-    return np.mean(ups, axis=0), np.mean(downs, axis=0)
-
-def multiclosure68band(xplotting_grids, fl=0):
-    tmp_list_up = []
-    tmp_list_down = []
-    for grid in xplotting_grids:
-        flavour_grid = grid.select_flavour(fl)
-        stats = flavour_grid.grid_values
-        err_up, err_down = stats.errorbar68()
-        tmp_list_up += [err_up]
-        tmp_list_down += [err_down]
-    ups = np.asarray(tmp_list_up)
-    downs = np.asarray(tmp_list_down)
-    return np.mean(ups, axis=0), np.mean(downs, axis=0)
 
 def internal_nonsinglet_xgrid(multiclosure_nx=4):
     """Given the number of x points, set up the xgrid for flavours which
@@ -525,3 +430,118 @@ def fits_correlation_matrix_totalpdf(fits_covariance_matrix_totalpdf):
     """
     d = np.sqrt(np.diag(fits_covariance_matrix_totalpdf))
     return (fits_covariance_matrix_totalpdf / d) / d[:, np.newaxis]
+
+
+def multiclosure_variance(
+    normalize_to, 
+    xplotting_grids, 
+    fl=0,
+    around_mean: bool = False
+):
+    """Given a list of pdfs from a multiclosure test, returns the variance of the central values
+    arount the mean of the CVs (or around the underlying PDF used for pseudo-data generation).
+
+    Parameters
+    ----------
+    around_mean: bool. If true, returns var around mean CVs, else around fake PDF.
+    """
+    tmp_list = []
+    gridnorm = xplotting_grids[normalize_to]
+    statsnorm = gridnorm.select_flavour(fl).grid_values
+    cvnorm = statsnorm.central_value()
+    for grid in xplotting_grids:
+        flavour_grid = grid.select_flavour(fl)
+        stats = flavour_grid.grid_values
+        cv = stats.central_value() / cvnorm
+        if np.all(cv == 1.):
+            continue
+        tmp_list += [cv]
+    cvs = np.asarray(tmp_list)
+    std_cvs = np.std(cvs, axis=0)
+    if around_mean:
+        mean_cvs = np.mean(cvs, axis=0)
+        return mean_cvs + std_cvs, mean_cvs - std_cvs
+    else:
+        return cvnorm + std_cvs, cvnorm - std_cvs
+
+
+def multiclosure_uncorrelatedbias(
+    normalize_to,
+    xplotting_grids,
+    fl=0,
+    around_mean: bool = False
+):
+    tmp_list = []
+    gridnorm = xplotting_grids[normalize_to]
+    statsnorm = gridnorm.select_flavour(fl).grid_values
+    cvnorm = statsnorm.central_value()
+    for grid in xplotting_grids:
+        flavour_grid = grid.select_flavour(fl)
+        stats = flavour_grid.grid_values
+        cv = stats.central_value() / cvnorm
+        if np.all(cv == 1.):
+            continue
+        tmp_list += [cv]
+    cvs = np.asarray(tmp_list)
+    bias = np.sum((cvs - cvnorm)**2, axis=0)
+    if around_mean:
+        mean_cvs = np.mean(cvs, axis=0)
+        return mean_cvs + bias, mean_cvs - bias
+    else:
+        return cvnorm + bias, cvnorm - bias
+
+
+def multiclosure_meancvs(
+    normalize_to,
+    xplotting_grids,
+    fl=0,
+):
+    tmp_list = []
+    gridnorm = xplotting_grids[normalize_to]
+    statsnorm = gridnorm.select_flavour(fl).grid_values
+    cvnorm = statsnorm.central_value()
+    for grid in xplotting_grids:
+        flavour_grid = grid.select_flavour(fl)
+        stats = flavour_grid.grid_values
+        cv = stats.central_value() / cvnorm
+        if np.all(cv == 1.):
+            continue
+        tmp_list += [cv]
+    cvs = np.asarray(tmp_list)
+    mean_cvs = np.mean(cvs, axis=0)
+    return mean_cvs
+
+
+def multiclosure1sigmaband(xplotting_grids, fl=0):
+    tmp_list_up = []
+    tmp_list_down = []
+    for grid in xplotting_grids:
+        flavour_grid = grid.select_flavour(fl)
+        stats = flavour_grid.grid_values
+        err_up, err_down = stats.errorbarstd()
+        tmp_list_up += [err_up]
+        tmp_list_down += [err_down]
+    ups = np.asarray(tmp_list_up)
+    downs = np.asarray(tmp_list_down)
+    return np.mean(ups, axis=0), np.mean(downs, axis=0)
+
+
+def multiclosure68band(xplotting_grids, fl=0):
+    tmp_list_up = []
+    tmp_list_down = []
+    for grid in xplotting_grids:
+        flavour_grid = grid.select_flavour(fl)
+        stats = flavour_grid.grid_values
+        err_up, err_down = stats.errorbar68()
+        tmp_list_up += [err_up]
+        tmp_list_down += [err_down]
+    ups = np.asarray(tmp_list_up)
+    downs = np.asarray(tmp_list_down)
+    return np.mean(ups, axis=0), np.mean(downs, axis=0)
+
+
+def yadayada(
+    normalize_to,
+    xplotting_grids,
+):
+    import ipdb; ipdb.set_trace()
