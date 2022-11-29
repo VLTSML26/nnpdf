@@ -1,0 +1,70 @@
+#
+# Bias-variance tradeoff from PDFs
+# Author: Samuele Voltan
+# Last updated: November 2022
+#
+
+fit: CHORUSQEDRADCOR1-sv-001
+
+normalize_to: 1
+t0pdfset: 220426-sv-003_fakepdf
+pdfs:
+  - 220426-sv-003_fakepdf
+  - CHORUSQEDRADCOR1-sv-001
+  - CHORUSQEDRADCOR1-sv-002
+
+closuretest:
+  from_: fit
+genrep:
+  from_: fit
+fakenoise:
+  from_: closuretest
+fakepdf:
+  from_: closuretest
+missingsys_experiments:
+  from_: closuretest
+
+q2min: 3.49
+w2min: 12.5
+theoryid: 200
+use_cuts: internal
+use_t0: True
+use_sameseed: False
+
+Q_specs:
+  - Q: 1.65
+  - Q: 100
+
+base_specs:
+  - basis: flavour
+    base_title: Flavour basis
+  - basis: evolution
+    base_title: Evolution basis
+
+meta:
+    title: Bias-variance PDFs CHORUS sys inconsistency
+    keywords: [multiclosure, inconsistency]
+    author: Samuele Voltan
+
+
+template_text: |
+
+  Summary
+  -------
+
+  {@ closuretest_summary @}
+
+  {@ with base_specs @}
+  {@ base_title @}
+  ----------------
+
+  {@ with Q_specs @}
+  ### Plots at {@ Q @} GeV
+
+  {@ plot_multiclosure_biasvariance_underlyingpdf @}
+
+  {@ endwith @}
+  {@ endwith @}
+
+actions_:
+    - report(main=true)
