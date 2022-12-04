@@ -770,7 +770,6 @@ def experiments_bootstrap_ratio(experiments_bootstrap_bias_variance, total_boots
         resampled.
 
     """
-    import ipdb; ipdb.set_trace()
     ratios = [bias / var for bias, var in experiments_bootstrap_bias_variance]
     bias_tot, var_tot = total_bootstrap_ratio
     ratios.append(bias_tot / var_tot)
