@@ -1037,20 +1037,21 @@ def plot_experiments_sqrt_ratio_bootstrap_distribution(
         experiments_bootstrap_sqrt_ratio, experiments_data
     ):
         fig, ax = plt.subplots()
-        ax.hist(sqrt_ratio_sample, bins=20, density=True)
+        ax.hist(sqrt_ratio_sample[0], bins=20, density=True, alpha=0.5)
+        ax.hist(sqrt_ratio_sample[1], bins=20, density=True, alpha=0.5)
         mean = np.mean(sqrt_ratio_sample)
         std = np.std(sqrt_ratio_sample)
 
         xlim = (mean - 3 * std, mean + 3 * std)
         ax.set_xlim(xlim)
 
-        x = np.linspace(*xlim, 100)
-        ax.plot(
-            x,
-            scipy.stats.norm.pdf(x, mean, std),
-            "k",
-            label=r"Fit: $\mu=$%.2f $\sigma=$%.2f" % (mean, std),
-        )
+        # x = np.linspace(*xlim, 100)
+        # ax.plot(
+        #     x,
+        #     scipy.stats.norm.pdf(x, mean, std),
+        #     "k",
+        #     label=r"Fit: $\mu=$%.2f $\sigma=$%.2f" % (mean, std),
+        # )
         ax.legend()
         ax.set_title(r"Bootstrap distribution of $\sqrt{R_{bv}}$ for " + str(exp))
         ax.set_xlabel(r"$\sqrt{R_{bv}}$")

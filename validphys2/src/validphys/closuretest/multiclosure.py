@@ -81,6 +81,8 @@ def internal_multiclosure_dataset_loader(
     typically used in these studies.
 
     """
+    # if np.unique(np.asarray([pdf.name[:-3] for pdf in fits_pdf])).shape[0] == 1:
+    #     return
     fits_dataset_predictions = [
         ThPredictionsResult.from_convolution(pdf, dataset)
         for pdf in fits_pdf
@@ -693,30 +695,42 @@ def fits_bootstrap_data_bias_variance(
 
     """
     # seed same rng so we can aggregate results
-    rng = np.random.RandomState(seed=boot_seed)
-    bias_boot = []
-    variance_boot = []
-    for _ in range(bootstrap_samples):
-        # use all fits. Use all replicas by default. Allow repeats in resample.
-        boot_internal_loader = _bootstrap_multiclosure_fits(
-            internal_multiclosure_data_loader,
-            rng,
-            len(fits),
-            len(fits),
-            _internal_max_reps,
-            _internal_max_reps,
-            True,
-        )
-        # explicitly pass n_rep to fits_dataset_bias_variance so it uses
-        # full subsample
-        bias, variance, _ = expected_dataset_bias_variance(
-            fits_dataset_bias_variance(
-                boot_internal_loader, _internal_max_reps, _internal_min_reps
+    fitnames_repeated = [fit.name[:-3] for fit in fits]
+    fitnames, nfits_each = np.unique(np.asarray(fitnames_repeated), return_counts=True)
+    if fitnames[0] != fits[0].name[:-3]:
+        fitnames = np.flip(fitnames)
+        nfits_each = np.flip(nfits_each)
+    
+    bias_each = []
+    variance_each = []
+    for i, nfits in enumerate(nfits_each):
+        rng = np.random.RandomState(seed=boot_seed)
+        bias_boot = []
+        variance_boot = []
+        fits_indices_taken = np.arange(i*(len(fits) - nfits), nfits + i*(len(fits)-1))
+        for _ in range(bootstrap_samples):
+            # use all fits. Use all replicas by default. Allow repeats in resample.
+            boot_internal_loader = _bootstrap_multiclosure_fits(
+                internal_multiclosure_data_loader,
+                rng,
+                fits_indices_taken,
+                nfits,
+                _internal_max_reps,
+                _internal_max_reps,
+                True,
             )
-        )
-        bias_boot.append(bias)
-        variance_boot.append(variance)
-    return np.array(bias_boot), np.array(variance_boot)
+            # explicitly pass n_rep to fits_dataset_bias_variance so it uses
+            # full subsample
+            bias, variance, _ = expected_dataset_bias_variance(
+                fits_dataset_bias_variance(
+                    boot_internal_loader, _internal_max_reps, _internal_min_reps
+                )
+            )
+            bias_boot.append(bias)
+            variance_boot.append(variance)
+        bias_each.append(np.asarray(bias_boot))
+        variance_each.append(np.asarray(variance_boot))
+    return np.array(bias_each), np.array(variance_each)
 
 
 experiments_bootstrap_bias_variance = collect(
@@ -756,6 +770,7 @@ def experiments_bootstrap_ratio(experiments_bootstrap_bias_variance, total_boots
         resampled.
 
     """
+    import ipdb; ipdb.set_trace()
     ratios = [bias / var for bias, var in experiments_bootstrap_bias_variance]
     bias_tot, var_tot = total_bootstrap_ratio
     ratios.append(bias_tot / var_tot)
