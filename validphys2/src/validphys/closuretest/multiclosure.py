@@ -440,6 +440,8 @@ def _bootstrap_multiclosure_fits(
     """
     closure_th, *input_tuple = internal_multiclosure_dataset_loader
     fit_boot_index = rng.choice(n_fit_max, size=n_fit, replace=use_repeats)
+    print(n_fit_max)
+    print(fit_boot_index)
     fit_boot_th = [closure_th[i] for i in fit_boot_index]
     boot_ths = []
     # construct proxy fits theory predictions
@@ -679,6 +681,15 @@ def total_expected_xi_resample(bias_variance_resampling_total):
     return special.erf(n_sigma_in_variance / np.sqrt(2))
 
 
+def multifits_name_and_quantity(fits):
+    fitnames_repeated = [fit.name[:-3] for fit in fits]
+    fitnames, nfits_each = np.unique(np.asarray(fitnames_repeated), return_counts=True)
+    if fitnames[0] != fits[0].name[:-3]:
+        fitnames = np.flip(fitnames)
+        nfits_each = np.flip(nfits_each)
+    return fitnames, nfits_each
+
+
 @check_multifit_replicas
 def fits_bootstrap_data_bias_variance(
     internal_multiclosure_data_loader,
@@ -695,19 +706,14 @@ def fits_bootstrap_data_bias_variance(
 
     """
     # seed same rng so we can aggregate results
-    fitnames_repeated = [fit.name[:-3] for fit in fits]
-    fitnames, nfits_each = np.unique(np.asarray(fitnames_repeated), return_counts=True)
-    if fitnames[0] != fits[0].name[:-3]:
-        fitnames = np.flip(fitnames)
-        nfits_each = np.flip(nfits_each)
-    
+    _, nfits_each = multifits_name_and_quantity(fits)
     bias_each = []
     variance_each = []
     for i, nfits in enumerate(nfits_each):
         rng = np.random.RandomState(seed=boot_seed)
         bias_boot = []
         variance_boot = []
-        fits_indices_taken = np.arange(i*(len(fits) - nfits), nfits + i*(len(fits)-1))
+        fits_indices_taken = np.arange(i*(len(fits) - nfits), i*(len(fits) - nfits) + nfits)
         for _ in range(bootstrap_samples):
             # use all fits. Use all replicas by default. Allow repeats in resample.
             boot_internal_loader = _bootstrap_multiclosure_fits(
