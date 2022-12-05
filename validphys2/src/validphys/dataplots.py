@@ -587,8 +587,9 @@ def mean_fits_chi2_spider(
         xticks = [group.name for group in fitgroup]
     
     mean_chi2s = np.mean(np.asarray(chi2list), axis=0)
+    var_chi2s = np.std(np.asarray(chi2list), axis=0)
     label = "Average across fits"
-    ax = plotutils.spiderplot(xticks, mean_chi2s, label)
+    ax = plotutils.spiderplot_mean_and_std(xticks, mean_chi2s, var_chi2s, label)
     ax.set_title(rf"$\chi^2$ by {processed_metadata_group}")
     return fig
 

@@ -529,3 +529,31 @@ def spiderplot(xticks, vals, label, ax=None):
     ax.legend(fontsize=12)
 
     return ax
+
+@ax_or_gca
+def spiderplot_mean_and_std(xticks, vals, stds, label, ax=None):
+    N = len(xticks)
+
+    angles = [n / float(N) * 2 * np.pi for n in range(N)]
+    # Add this on so that the plot line connects back to the start
+    angles += angles[:1]
+    vals = list(vals)
+    stds = list(stds)
+    vals += vals[:1]
+    stds += stds[:1]
+    vals_up = [val + std for val, std in zip(vals, stds)]
+    vals_down = [val - std for val, std in zip(vals, stds)]
+
+    ax.set_theta_offset(np.pi / 2)
+    ax.set_theta_direction(-1)
+
+    plt.xticks(angles[:-1], xticks, size=8, zorder=6)
+
+    # Draw ylabels
+
+    ax.plot(angles, vals, linewidth=2, label=label, linestyle="solid", zorder=1)
+    ax.fill_between(angles, vals_up, vals_down, alpha=0.4, zorder=1)
+    ax.grid(linewidth=1)
+    ax.legend(fontsize=12)
+
+    return ax
