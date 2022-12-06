@@ -440,8 +440,8 @@ def _bootstrap_multiclosure_fits(
     """
     closure_th, *input_tuple = internal_multiclosure_dataset_loader
     fit_boot_index = rng.choice(n_fit_max, size=n_fit, replace=use_repeats)
-    print(n_fit_max)
-    print(fit_boot_index)
+    # print(n_fit_max)
+    # print(fit_boot_index)
     fit_boot_th = [closure_th[i] for i in fit_boot_index]
     boot_ths = []
     # construct proxy fits theory predictions

@@ -1039,7 +1039,7 @@ def plot_experiments_sqrt_ratio_bootstrap_distribution(
     ):
         fig, ax = plt.subplots()
         for histvalues, fitname in zip(sqrt_ratio_sample, fitnames):
-            ax.hist(histvalues, bins=20, alpha=0.62745981, label=fitname)
+            ax.hist(histvalues, bins=20, alpha=0.62745981, histtype='step', fill=True, label=fitname)
         ax.legend()
         ax.set_title(r"Bootstrap distribution of $\sqrt{R_{bv}}$ for " + str(exp))
         ax.set_xlabel(r"$\sqrt{R_{bv}}$")
