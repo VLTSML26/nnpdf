@@ -1059,6 +1059,38 @@ def fits_chi2_table(
     res = pd.concat(dfs, axis=0, keys=keys)
     return res
 
+@table
+def mean_fits_chi2_table(
+    fits,
+    fits_total_chi2_data,
+    fits_datasets_chi2_table,
+    fits_groups_chi2_table,
+    show_total: bool = False,
+):
+    chi2table = fits_chi2_table(
+        fits_total_chi2_data,
+        fits_datasets_chi2_table,
+        fits_groups_chi2_table,
+        show_total,
+    )
+    fitnames_repeated = [fit.name[:-3] for fit in fits]
+    fitnames, nfits_each = np.unique(np.asarray(fitnames_repeated), return_counts=True)
+    if fitnames[0] != fits[0].name[:-3]:
+        fitnames = np.flip(fitnames)
+        nfits_each = np.flip(nfits_each)
+    averaged_dfs = []
+    for fitname in fitnames:
+        proxy_to_elements = []
+        for key in chi2table.keys():
+            for tuple_comp in key:
+                if fitname in tuple_comp:
+                    proxy_to_elements += [key]
+        chi2_per_fitname = chi2table[proxy_to_elements]
+        chi2_per_fitname = chi2_per_fitname.transpose().groupby(level=1).mean().transpose()
+        expanded_index = pd.MultiIndex.from_product(([fitname], chi2_per_fitname.keys()))
+        chi2_per_fitname = chi2_per_fitname.transpose().set_index(expanded_index).transpose()
+        averaged_dfs += [chi2_per_fitname]
+    return pd.concat(averaged_dfs, axis=1)
 
 @table
 def dataspecs_chi2_table(

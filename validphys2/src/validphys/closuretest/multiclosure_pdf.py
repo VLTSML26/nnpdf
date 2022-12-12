@@ -538,10 +538,3 @@ def multiclosure68band(xplotting_grids, fl=0):
     ups = np.asarray(tmp_list_up)
     downs = np.asarray(tmp_list_down)
     return np.mean(ups, axis=0), np.mean(downs, axis=0)
-
-
-def yadayada(
-    normalize_to,
-    xplotting_grids,
-):
-    import ipdb; ipdb.set_trace()
