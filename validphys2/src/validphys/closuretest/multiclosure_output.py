@@ -1046,6 +1046,31 @@ def plot_experiments_sqrt_ratio_bootstrap_distribution(
         ax.set_ylabel(r"Counts = " + str(len(sqrt_ratio_sample[0])))
         yield fig
 
+@figuregen
+def plot_groups_sqrt_ratio_bootstrap_distribution(
+    groups_bootstrap_sqrt_ratio, groups_data, multifits_name_and_quantity
+):
+    """Plots a histogram for each experiment, showing the distribution of 
+    bootstrap samples. Takes the mean and std deviation of the bootstrap sample 
+    and plots the corresponding scaled normal distribution for comparison. 
+    The limits are set to be +/- 3 std deviations of the mean.
+    """
+    # NOTE: experiments_bootstrap_sqrt_ratio includes total as its last element.
+    # while this function does not include total. 
+    # Refer to `plot_total_sqrt_ratio_bootstrap_distribution` for total ratio.
+    fitnames, _ = multifits_name_and_quantity
+    for sqrt_ratio_sample, exp in zip(
+        groups_bootstrap_sqrt_ratio, groups_data
+    ):
+        fig, ax = plt.subplots()
+        for histvalues, fitname in zip(sqrt_ratio_sample, fitnames):
+            ax.hist(histvalues, bins=20, alpha=0.62745981, histtype='step', fill=True, label=fitname)
+        ax.legend()
+        ax.set_title(r"Bootstrap distribution of $\sqrt{R_{bv}}$ for " + str(exp))
+        ax.set_xlabel(r"$\sqrt{R_{bv}}$")
+        ax.set_ylabel(r"Counts = " + str(len(sqrt_ratio_sample[0])))
+        yield fig
+
 @figure
 def plot_total_sqrt_ratio_bootstrap_distribution(
     experiments_bootstrap_sqrt_ratio
