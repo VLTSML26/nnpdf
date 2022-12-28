@@ -107,6 +107,18 @@ def internal_multiclosure_data_loader(
         data, fits_pdf, multiclosure_underlyinglaw, fits, dataset_inputs_t0_covmat_from_systematics
     )
 
+@check_fits_underlying_law_match
+@check_fits_areclosures
+def multifits_name_and_quantity(
+    fits
+):
+    fitnames_repeated = [fit.label for fit in fits]
+    fitnames, nfits_each = np.unique(np.asarray(fitnames_repeated), return_counts=True)
+    if fitnames[0] != fits[0].label:
+        fitnames = np.flip(fitnames)
+        nfits_each = np.flip(nfits_each)
+    return fitnames, nfits_each
+
 
 @check_multifit_replicas
 def fits_dataset_bias_variance(

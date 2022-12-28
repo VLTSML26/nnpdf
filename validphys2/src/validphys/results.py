@@ -1061,23 +1061,30 @@ def fits_chi2_table(
 
 @table
 def mean_fits_chi2_table(
-    fits,
+    multifits_name_and_quantity,
     fits_total_chi2_data,
     fits_datasets_chi2_table,
     fits_groups_chi2_table,
     show_total: bool = False,
 ):
+    """
+    Requires
+    --------
+    The base closure test shoud be labelled as 'Base CT'
+
+    Note
+    ----
+    For now works with only two families of fits.
+    It is concieved to represent che chi2 of a base CT and an inconsistent one, so there is no need 
+    for putting more than two families into it.
+    """
     chi2table = fits_chi2_table(
         fits_total_chi2_data,
         fits_datasets_chi2_table,
         fits_groups_chi2_table,
         show_total,
     )
-    fitnames_repeated = [fit.name[:-3] for fit in fits]
-    fitnames, nfits_each = np.unique(np.asarray(fitnames_repeated), return_counts=True)
-    if fitnames[0] != fits[0].name[:-3]:
-        fitnames = np.flip(fitnames)
-        nfits_each = np.flip(nfits_each)
+    fitnames, _ = multifits_name_and_quantity
     averaged_dfs = []
     for fitname in fitnames:
         proxy_to_elements = []
@@ -1090,7 +1097,14 @@ def mean_fits_chi2_table(
         expanded_index = pd.MultiIndex.from_product(([fitname], chi2_per_fitname.keys()))
         chi2_per_fitname = chi2_per_fitname.transpose().set_index(expanded_index).transpose()
         averaged_dfs += [chi2_per_fitname]
-    return pd.concat(averaged_dfs, axis=1)
+    concatenated_df = pd.concat(averaged_dfs, axis=1)
+    if 'Base CT' in fitnames and len(fitnames) == 2:
+        nonbase_fitname = fitnames[~(fitnames == 'Base CT')][-1]
+        diffs = concatenated_df['Base CT'].values[:,0] - concatenated_df[nonbase_fitname].values[:,0]
+        scaled_diffs = diffs / concatenated_df['Base CT'].values[:,0]
+        percent_scaled_diffs = np.abs(scaled_diffs) * 100
+        concatenated_df[r'% of $\chi^2$ changed'] = percent_scaled_diffs
+    return concatenated_df
 
 @table
 def dataspecs_chi2_table(
