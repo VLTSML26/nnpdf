@@ -682,9 +682,9 @@ def total_expected_xi_resample(bias_variance_resampling_total):
 
 
 def multifits_name_and_quantity(fits):
-    fitnames_repeated = [fit.name[:-3] for fit in fits]
+    fitnames_repeated = [fit.label for fit in fits]
     fitnames, nfits_each = np.unique(np.asarray(fitnames_repeated), return_counts=True)
-    if fitnames[0] != fits[0].name[:-3]:
+    if fitnames[0] != fits[0].label:
         fitnames = np.flip(fitnames)
         nfits_each = np.flip(nfits_each)
     return fitnames, nfits_each
