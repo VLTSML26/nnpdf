@@ -1065,7 +1065,18 @@ def plot_groups_sqrt_ratio_bootstrap_distribution(
         fig, ax = plt.subplots()
         for histvalues, fitname in zip(sqrt_ratio_sample, fitnames):
             ax.hist(histvalues, bins=20, alpha=0.62745981, histtype='step', fill=True, label=fitname)
-        ax.legend()
+            if fitname == 'Inconsistent CT':
+                mean_inconsistent_ct = np.mean(histvalues)
+                sigma_inconsistent_ct = np.std(histvalues)
+            elif fitname == 'Base CT':
+                mean_base_ct = np.mean(histvalues)
+        if 'Inconsistent CT' in fitnames and 'Base CT' in fitnames:
+            distance = (mean_inconsistent_ct - mean_base_ct) / sigma_inconsistent_ct
+            distance = np.abs(distance)
+            strtitle = 'Distance = ' + ('%.2f' % distance) + r'$\sigma$'
+        else:
+            strtitle = None
+        ax.legend(title=strtitle, title_fontsize=10)
         ax.set_title(r"Bootstrap distribution of $\sqrt{R_{bv}}$ for " + str(exp))
         ax.set_xlabel(r"$\sqrt{R_{bv}}$")
         ax.set_ylabel(r"Counts = " + str(len(sqrt_ratio_sample[0])))
