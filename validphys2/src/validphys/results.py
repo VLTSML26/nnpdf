@@ -1062,6 +1062,7 @@ def fits_chi2_table(
 @table
 def mean_fits_chi2_table(
     multifits_name_and_quantity,
+    fits,
     fits_total_chi2_data,
     fits_datasets_chi2_table,
     fits_groups_chi2_table,
@@ -1100,10 +1101,12 @@ def mean_fits_chi2_table(
     concatenated_df = pd.concat(averaged_dfs, axis=1)
     if 'Base CT' in fitnames and len(fitnames) == 2:
         nonbase_fitname = fitnames[~(fitnames == 'Base CT')][-1]
-        diffs = concatenated_df['Base CT'].values[:,0] - concatenated_df[nonbase_fitname].values[:,0]
-        scaled_diffs = diffs / concatenated_df['Base CT'].values[:,0]
-        percent_scaled_diffs = np.abs(scaled_diffs) * 100
-        concatenated_df[r'% of $\chi^2$ changed'] = percent_scaled_diffs
+        diffs = np.abs(concatenated_df['Base CT'].values[:,0] - concatenated_df[nonbase_fitname].values[:,0])
+        n_fits = len(fits) / 2
+        n_data = concatenated_df['Base CT'].values[:,1]
+        sigma = np.sqrt(2 / (n_fits * n_data))
+        scaled_diffs = diffs / sigma
+        concatenated_df[r'Distance in $\sigma$'] = scaled_diffs
     return concatenated_df
 
 @table
