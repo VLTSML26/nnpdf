@@ -766,6 +766,27 @@ def groups_bootstrap_xi_comparison(
         groups_bootstrap_xi_table, groups_bootstrap_expected_xi_table
     )
 
+@figure
+def plot_groups_bootstrap_xi_comparison(
+    groups_bootstrap_xi_comparison
+):
+    from validphys import plotutils
+    labels = groups_bootstrap_xi_comparison.index
+    boot_mean = groups_bootstrap_xi_comparison.values.T[0]
+    boot_expected_mean = groups_bootstrap_xi_comparison.values.T[2]
+    boot_error = groups_bootstrap_xi_comparison.values.T[1]
+    boot_expected_error = groups_bootstrap_xi_comparison.values.T[3]
+
+    fig, ax = plotutils.barplot_with_errorbars(
+        [boot_mean, boot_expected_mean],
+        [boot_error, boot_expected_error],
+        labels,
+        [r'Computed $\xi_{1\sigma}$', r'Expected $\xi_{1\sigma}$']
+    )
+    ax.set_title(r'Comparison of computed and expected $\xi_{1\sigma}$'+'\n')
+    ax.legend()
+
+    return fig
 
 @figuregen
 def plot_experiments_sqrt_ratio_bootstrap_distribution(

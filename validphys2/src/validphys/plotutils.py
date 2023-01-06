@@ -376,6 +376,106 @@ def barplot(values, collabels, datalabels, orientation='auto'):
     ax._bar_orientation = orientation
     return fig, ax
 
+def barplot_with_errorbars(values, errors, collabels, datalabels, orientation='auto'):
+    """
+    Like barplot, but with errorbars.
+    """
+    values = np.atleast_2d(values)
+    ntypes, l = values.shape
+    lc = len(collabels)
+    if lc != l:
+        raise ValueError(f"Mismatch between the number of data points ({l}) and "
+                         f"the number axis labels ({lc})")
+
+    width = 2
+    #The tick positions
+    x = np.linspace(0, 1.1*width*ntypes*l-1, l)
+    w,h = plt.rcParams["figure.figsize"]
+
+    #Rescale if we have too much data
+    rescale = max(1, 1+(width*l*ntypes-15)*0.05)
+    #Rescale if the labels are too long
+    lbrescale = max(1, 1+0.04*(max(len(l) for l in collabels)-5))
+
+    if orientation == 'auto':
+        if l*ntypes > 20:
+            orientation = 'horizontal'
+        else:
+            orientation = 'vertical'
+
+    if orientation == 'vertical':
+        fig, ax = plt.subplots(figsize=(w*rescale, h*lbrescale))
+        barfunc = ax.bar
+        infoaxis = ax.xaxis
+        infolim = ax.set_xlim
+        otheraxis = ax.yaxis
+        rotation = 80
+        def get_pos(val):
+            if val >= 0:
+                xytext = (0,5)
+            else:
+                xytext = (0,-5)
+            horizontalalignment='center'
+            return {'xytext': xytext,
+                    'horizontalalignment':horizontalalignment}
+
+        def xytext(x,y): return x,y
+    elif orientation =='horizontal':
+        fig, ax = plt.subplots(figsize=(w*lbrescale, h*rescale))
+        barfunc = ax.barh
+        infoaxis = ax.yaxis
+        infolim = ax.set_ylim
+        otheraxis = ax.xaxis
+        rotation = 10
+        def get_pos(val):
+            if val >= 0:
+                xytext = (5,0)
+                horizontalalignment= 'left'
+            else:
+                xytext = (-5,0)
+                horizontalalignment='right'
+            return {'xytext': xytext,
+                    'horizontalalignment':horizontalalignment}
+        def xytext(x,y): return y,x
+
+    else:
+        raise ValueError("orientation must be one of ('auto', 'horizontal', 'vertical')")
+
+    infoaxis.set_ticks(x)
+
+    infoaxis.set_ticklabels(collabels,rotation=rotation)
+    deltas = list(centered_range(ntypes, distance=width))
+    for row, err, delta, datalabel in zip(values, errors, deltas, datalabels):
+        thisx = x+delta
+        barfunc(thisx, row, width, yerr=err, label=datalabel)
+        for xp, v, upshift in zip(thisx, row, err):
+            #NaN coords cause error (https://github.com/NNPDF/nnpdf/issues/363)
+            if np.all(np.isfinite([xp, v])):
+                ax.annotate(f'{format_number(v,3)}', xy=xytext(xp,v+upshift),
+                            textcoords='offset points',
+                            size='small', wrap=True, **get_pos(v+upshift)
+                            )
+            else:
+            #place label at zero for nan coordinate -> ensure `get_pos` is fed altered coords
+                new_pos = [val if np.isfinite(val) else 0 for val in [xp, v]]
+                ax.annotate(f'{format_number(v,3)}', xy=xytext(*new_pos),
+                            textcoords='offset points',
+                            size='small', wrap=True, **get_pos(new_pos[0])
+                            )
+
+
+    infolim(x[0]+deltas[0] - width/2, x[-1]+deltas[-1]+width/2)
+    otheraxis.set_visible(False)
+    ax.tick_params(length=0)
+    ax.spines['left'].set_color('none')
+    ax.spines['bottom'].set_color('none')
+    ax.spines['top'].set_color('none')
+    ax.spines['right'].set_color('none')
+    ax.grid(False)
+    fig.tight_layout()
+    ax._bar_orientation = orientation
+    return fig, ax
+
 def plot_horizontal_errorbars(cvs, errors, categorylabels, datalabels=None,
                               xlim=None):
     """A plots with a list of horizontal errorbars oriented vertically.
