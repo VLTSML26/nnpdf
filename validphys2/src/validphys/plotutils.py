@@ -446,8 +446,11 @@ def barplot_with_errorbars(values, errors, collabels, datalabels, orientation='a
     infoaxis.set_ticklabels(collabels,rotation=rotation)
     deltas = list(centered_range(ntypes, distance=width))
     for row, err, delta, datalabel in zip(values, errors, deltas, datalabels):
-        thisx = x+delta
-        barfunc(thisx, row, width, yerr=err, label=datalabel)
+        thisx = x + delta
+        if orientation == 'vertical':
+            barfunc(thisx, row, width, yerr=err, label=datalabel)
+        else:
+            barfunc(thisx, row, width, xerr=err, label=datalabel)
         for xp, v, upshift in zip(thisx, row, err):
             #NaN coords cause error (https://github.com/NNPDF/nnpdf/issues/363)
             if np.all(np.isfinite([xp, v])):
