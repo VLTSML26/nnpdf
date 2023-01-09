@@ -445,7 +445,9 @@ def multiclosure_variance(
     ----------
     around_mean: bool. If true, returns var around mean CVs, else around fake PDF.
     """
-    tmp_list = []
+    tmp_cvs = []
+    tmp_ups = []
+    tmp_downs = []
     gridnorm = xplotting_grids[normalize_to]
     statsnorm = gridnorm.select_flavour(fl).grid_values
     cvnorm = statsnorm.central_value()
@@ -453,14 +455,22 @@ def multiclosure_variance(
         flavour_grid = grid.select_flavour(fl)
         stats = flavour_grid.grid_values
         cv = stats.central_value() / cvnorm
+        std_down, std_up = stats.errorbarstd()
         if np.all(cv == 1.):
             continue
-        tmp_list += [cv]
-    cvs = np.asarray(tmp_list)
+        tmp_cvs += [cv]
+        tmp_ups += [std_up]
+        tmp_downs += [std_down]
+    cvs = np.asarray(tmp_cvs)
+    ups = np.asarray(tmp_ups)
+    downs = np.asarray(tmp_downs)
     std_cvs = np.std(cvs, axis=0)
     if around_mean:
         mean_cvs = np.mean(cvs, axis=0)
-        return mean_cvs + std_cvs, mean_cvs - std_cvs
+        mean_ups = np.mean(ups, axis=0)
+        mean_downs = np.mean(downs, axis=0)
+        # return mean_cvs + std_cvs, mean_cvs - std_cvs
+        return mean_ups, mean_downs
     else:
         return cvnorm + std_cvs, cvnorm - std_cvs
 
