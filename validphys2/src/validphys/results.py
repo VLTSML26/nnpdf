@@ -852,9 +852,67 @@ groups_chi2 = collect(
 procs_chi2 = collect("dataset_inputs_abs_chi2_data", ("group_dataset_inputs_by_process",)
 )
 
+pdfs_groups_chi2 = collect("groups_chi2", ("pdfs",))
+pdfs_datasets_chi2_data = collect("groups_each_dataset_chi2", ("pdfs",))
+
+# def mean_pdfs_groups_chi2(pdfs_groups_chi2):
+#     # NOTE: dimensions are central_results[pdf][group], same for ndata
+#     central_results = np.asarray([
+#         [chi2obj.central_result for chi2obj in pdfchi2obj]
+#         for pdfchi2obj in pdfs_groups_chi2
+#     ])
+#     # NOTE: it is supposed that ndata is the same for all pdfs
+#     ndata = np.asarray([
+#         [chi2obj.ndata for chi2obj in pdfchi2obj]
+#         for pdfchi2obj in pdfs_groups_chi2
+#     ])
+#     return np.mean(central_results, axis=0), ndata[0]
+
+# def mean_pdfs_datasets_chi2(pdfs_datasets_chi2_data):
+#     outer_list = []
+#     for i in pdfs_datasets_chi2_data:
+#         jlist = []
+#         for j in i:
+#             jlist += [j[0]]
+#         outer_list += [jlist]
+#     return mean_pdfs_groups_chi2(outer_list)
+
+# @table
+# def mean_pdfs_groups_chi2_table(mean_pdfs_groups_chi2, groups_data):
+#     chi2s, ndata = mean_pdfs_groups_chi2
+#     database_dict = {}
+#     for group, chi2, n in zip(groups_data, chi2s, ndata):
+#         database_dict[group.name] = (n, chi2/n)
+#     database = pd.DataFrame.from_dict(
+#         database_dict,
+#         orient='index',
+#         columns=[r'$N_{data}$', r'$\chi^2/N_{data}$']
+#     )
+#     return database
+
+# @table
+# def mean_pdfs_datasets_chi2_table(mean_pdfs_datasets_chi2, data):
+#     return mean_pdfs_groups_chi2_table(mean_pdfs_datasets_chi2, data)
+
+# @table
+# def mean_pdfs_groups_and_datasets_chi2_table(mean_pdfs_datasets_chi2_table, mean_pdfs_groups_chi2_table):
+#     import ipdb; ipdb.set_trace()
+
 fits_groups_chi2_data = collect("groups_chi2", ("fits", "fitcontext"))
 fits_groups = collect("groups_data", ("fits", "fitcontext",))
+pdfs_groups = collect("groups_data", ("pdfs",))
 
+@table
+def pdfs_groups_chi2_table(
+    pdfs,
+    pdfs_groups,
+    pdfs_groups_chi2,
+):
+    return fits_groups_chi2_table(
+        [pdf.name for pdf in pdfs],
+        pdfs_groups,
+        pdfs_groups_chi2,
+    )
 
 # TODO: Possibly get rid of the per_point_data parameter and have separate
 # actions for absolute and relative tables.
@@ -945,7 +1003,19 @@ groups_datasets_chi2_data = collect(
     "each_dataset_chi2", ("group_dataset_inputs_by_metadata",)
 )
 fits_datasets_chi2_data = collect("groups_datasets_chi2_data", ("fits", "fitcontext"))
+pdfs_datasets_chi2_data = collect("groups_datasets_chi2_data", ("pdfs",))
 
+@table
+def pdfs_datasets_chi2_table(
+    pdfs,
+    pdfs_groups,
+    pdfs_datasets_chi2_data,
+):
+    return fits_datasets_chi2_table(
+        [pdf.name for pdf in pdfs],
+        pdfs_groups,
+        pdfs_datasets_chi2_data,
+    )
 
 @table
 def fits_datasets_chi2_table(
@@ -1013,9 +1083,22 @@ def dataspecs_datasets_chi2_table(
 
 
 fits_total_chi2_data = collect("total_chi2_data", ("fits", "fitcontext"))
+pdfs_total_chi2_data = collect("total_chi2_data", ("pdfs", ))
 dataspecs_total_chi2_data = collect("total_chi2_data", ("dataspecs",))
 
 # TODO: Decide what to do with the horrible totals code.
+@table
+def pdfs_chi2_table(
+    pdfs_total_chi2_data,
+    pdfs_datasets_chi2_table,
+    pdfs_groups_chi2_table,
+):
+    return fits_chi2_table(
+        pdfs_total_chi2_data,
+        pdfs_datasets_chi2_table,
+        pdfs_groups_chi2_table,
+    )
+
 @table
 def fits_chi2_table(
     fits_total_chi2_data,
@@ -1058,6 +1141,19 @@ def fits_chi2_table(
 
     res = pd.concat(dfs, axis=0, keys=keys)
     return res
+
+@table
+def mean_pdfs_chi2_table(
+    pdfs_total_chi2_data,
+    pdfs_datasets_chi2_table,
+    pdfs_groups_chi2_table,
+):
+    table = pdfs_chi2_table(
+        pdfs_total_chi2_data,
+        pdfs_datasets_chi2_table,
+        pdfs_groups_chi2_table,
+    )
+    return table.transpose().groupby(level=1).mean().transpose()
 
 @table
 def mean_fits_chi2_table(
