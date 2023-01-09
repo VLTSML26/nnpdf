@@ -103,7 +103,7 @@ def manipulate_sampling_covmat_eigs(
 ):
     eigval, eigvect = dataset_inputs_sampling_covmat_eigs
     manip_eigval = np.copy(eigval)
-    minimum = np.min(manip_eigval) / 100
+    minimum = np.min(manip_eigval) / eigval.shape[-1]
     for _ in range(num_turnoff):
         manip_eigval[np.argmax(manip_eigval)] = minimum
     return manip_eigval, eigvect
@@ -114,7 +114,7 @@ def manipulate_fitting_covmat_eigs(
 ):
     eigval, eigvect = dataset_inputs_fitting_covmat_eigs
     manip_eigval = np.copy(eigval)
-    minimum = np.min(manip_eigval) / 100
+    minimum = np.min(manip_eigval) / eigval.shape[-1]
     for _ in range(num_turnoff):
         manip_eigval[np.argmax(manip_eigval)] = minimum
     return manip_eigval, eigvect
