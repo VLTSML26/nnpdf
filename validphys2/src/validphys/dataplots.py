@@ -1376,7 +1376,6 @@ def plot_xq2(
         else:
             # This is to get the label key
             coords = [], []
-        print(key + str(coords[0].shape[0]))
         ax.plot(
             *coords,
             label=key,
