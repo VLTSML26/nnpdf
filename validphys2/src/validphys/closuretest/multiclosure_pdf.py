@@ -436,7 +436,7 @@ def multiclosure_variance(
     normalize_to, 
     xplotting_grids, 
     fl=0,
-    around_mean: bool = False
+    around_mean: bool = True
 ):
     """Given a list of pdfs from a multiclosure test, returns the variance of the central values
     arount the mean of the CVs (or around the underlying PDF used for pseudo-data generation).
@@ -445,7 +445,6 @@ def multiclosure_variance(
     ----------
     around_mean: bool. If true, returns var around mean CVs, else around fake PDF.
     """
-    tmp_cvs = []
     tmp_ups = []
     tmp_downs = []
     gridnorm = xplotting_grids[normalize_to]
@@ -458,21 +457,16 @@ def multiclosure_variance(
         std_down, std_up = stats.errorbarstd()
         if np.all(cv == 1.):
             continue
-        tmp_cvs += [cv]
         tmp_ups += [std_up]
         tmp_downs += [std_down]
-    cvs = np.asarray(tmp_cvs)
     ups = np.asarray(tmp_ups)
     downs = np.asarray(tmp_downs)
-    std_cvs = np.std(cvs, axis=0)
     if around_mean:
-        mean_cvs = np.mean(cvs, axis=0)
         mean_ups = np.mean(ups, axis=0)
         mean_downs = np.mean(downs, axis=0)
-        # return mean_cvs + std_cvs, mean_cvs - std_cvs
         return mean_ups, mean_downs
     else:
-        return cvnorm + std_cvs, cvnorm - std_cvs
+        ...
 
 
 def multiclosure_uncorrelatedbias(
@@ -493,7 +487,7 @@ def multiclosure_uncorrelatedbias(
             continue
         tmp_list += [cv]
     cvs = np.asarray(tmp_list)
-    bias = np.sqrt(np.sum((cvs - cvnorm)**2, axis=0))
+    bias = np.sqrt(np.sum((cvs - cvnorm)**2, axis=0) / len(cvs))
     if around_mean:
         mean_cvs = np.mean(cvs, axis=0)
         return mean_cvs + bias, mean_cvs - bias
