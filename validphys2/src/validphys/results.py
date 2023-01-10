@@ -1063,6 +1063,30 @@ def pdfs_chi2_table(
     )
 
 @table
+def pdfs_chi2_onlygroups_table(
+    pdfs_total_chi2_data,
+    pdfs_groups_chi2_table,
+    show_total: bool = False,
+):
+    if show_total:
+        total_points = np.array(
+            [total_chi2_data.ndata for total_chi2_data in pdfs_total_chi2_data]
+        )
+        total_chi = np.array(
+            [total_chi2_data.central_result for total_chi2_data in pdfs_total_chi2_data]
+        )
+        total_chi /= total_points
+        row = np.zeros(len(total_points) * 2)
+        row[::2] = total_points
+        row[1::2] = total_chi
+        df = pd.DataFrame(
+            np.atleast_2d(row), columns=pdfs_groups_chi2_table.columns, index=["Total"]
+        )
+        return pdfs_groups_chi2_table.append(df)
+    else:
+        return pdfs_groups_chi2_table
+
+@table
 def fits_chi2_table(
     fits_total_chi2_data,
     fits_datasets_chi2_table,
@@ -1117,6 +1141,19 @@ def mean_pdfs_chi2_table(
         pdfs_datasets_chi2_table,
         pdfs_groups_chi2_table,
         show_total
+    )
+    return table.transpose().groupby(level=1).mean().transpose()
+
+@table
+def mean_pdfs_chi2_onlygroups_table(
+    pdfs_total_chi2_data,
+    pdfs_groups_chi2_table,
+    show_total: bool = False,
+):
+    table = pdfs_chi2_onlygroups_table(
+        pdfs_total_chi2_data,
+        pdfs_groups_chi2_table,
+        show_total,
     )
     return table.transpose().groupby(level=1).mean().transpose()
 
