@@ -493,7 +493,7 @@ def multiclosure_uncorrelatedbias(
             continue
         tmp_list += [cv]
     cvs = np.asarray(tmp_list)
-    bias = np.sum((cvs - cvnorm)**2, axis=0)
+    bias = np.sqrt(np.sum((cvs - cvnorm)**2, axis=0))
     if around_mean:
         mean_cvs = np.mean(cvs, axis=0)
         return mean_cvs + bias, mean_cvs - bias
