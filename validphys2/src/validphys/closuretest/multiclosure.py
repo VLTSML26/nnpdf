@@ -684,8 +684,8 @@ def total_expected_xi_resample(bias_variance_resampling_total):
 def multifits_name_and_quantity(fits):
     fitnames_repeated = [fit.label for fit in fits]
     fitnames, nfits_each = np.unique(np.asarray(fitnames_repeated), return_counts=True)
-    index = np.unique(np.asarray(fitnames_repeated), return_index=True)
-    fitnames = fitnames[index[1]]
+    _, indices = np.unique(np.asarray(fitnames_repeated), return_index=True)
+    fitnames = np.asarray(fitnames_repeated)[sorted(indices)]
     if fitnames[0] != fits[0].label:
         raise KeyError('Wrong indexing fits')
     return fitnames, nfits_each
@@ -717,10 +717,8 @@ def fits_bootstrap_data_bias_variance(
         variance_boot = []
         if i == 0:
             fits_indices_taken = np.arange(0, nfits)
-            print(0, nfits)
         else:
             fits_indices_taken = np.arange(nfits_cumulative[i-1], nfits_cumulative[i])
-            print(nfits_cumulative[i-1], nfits_cumulative[i])
         for _ in range(bootstrap_samples):
             # use all fits. Use all replicas by default. Allow repeats in resample.
             boot_internal_loader = _bootstrap_multiclosure_fits(
