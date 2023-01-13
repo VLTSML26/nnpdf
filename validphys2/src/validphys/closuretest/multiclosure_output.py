@@ -849,46 +849,46 @@ def plot_sqrt_ratio_behavior(
 
 @table
 def experiments_bootstrap_sqrt_ratio_table(
-    experiments_bootstrap_sqrt_ratio, experiments_data
+    experiments_bootstrap_sqrt_ratio, experiments_data, multifits_name_and_quantity
 ):
-    """Given experiments_bootstrap_sqrt_ratio, which a bootstrap
-    resampling of the sqrt(bias/variance) for each experiment and the total
-    across all data, tabulate the mean and standard deviation across bootstrap
-    samples.
-
-    """
+    fitnames, _ = multifits_name_and_quantity
     indices = list(map(str, experiments_data)) + ["Total"]
     records = []
-    for i, exp in enumerate(indices):
-        ratio_boot = experiments_bootstrap_sqrt_ratio[i]
-        records.append(
-            dict(
-                experiment=exp,
-                mean_ratio=np.mean(ratio_boot, axis=0),
-                std_ratio=np.std(ratio_boot, axis=0),
+    for sqrt_ratio_sample, exp in zip(
+        experiments_bootstrap_sqrt_ratio, indices
+    ):
+        for values, fitname in zip(sqrt_ratio_sample, fitnames):
+            mean = np.mean(values)
+            sigma = np.std(values)
+            records.append(
+                dict(
+                    Experiment=exp,
+                    Fits=fitname,
+                    mean_ratio=mean,
+                    std_ratio=sigma,
+                )
             )
-        )
     df = pd.DataFrame.from_records(
-        records, index="experiment", columns=("experiment", "mean_ratio", "std_ratio")
+        records, index=["Experiment", "Fits"]
     )
     df.columns = [
-        "Bootstrap mean sqrt(bias/variance)",
-        "Bootstrap std. dev. sqrt(bias/variance)",
+        r"Bootstrap mean $\sqrt{R_{bv}}$",
+        r"Bootstrap std. dev. $\sqrt{R_{bv}}$",
     ]
     return df
 
 
 @table
 def groups_bootstrap_sqrt_ratio_table(
-    groups_bootstrap_sqrt_ratio, groups_data
+    groups_bootstrap_sqrt_ratio, groups_data, multifits_name_and_quantity
 ):
     """Like :py:func:`experiments_bootstrap_sqrt_ratio_table` but for
     metadata groups.
     """
     df = experiments_bootstrap_sqrt_ratio_table(
-        groups_bootstrap_sqrt_ratio, groups_data
+        groups_bootstrap_sqrt_ratio, groups_data, multifits_name_and_quantity
     )
-    idx = df.index.rename("group")
+    idx = df.index.rename(["Group", "Fits"])
     return df.set_index(idx)
 
 
