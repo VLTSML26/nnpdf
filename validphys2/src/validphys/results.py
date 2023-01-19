@@ -938,6 +938,10 @@ def fits_groups_phi_table(fits_name_with_covmat_label, fits_groups, fits_groups_
     res = pd.concat(dfs, axis=1)
     return res
 
+@table
+def mean_fits_groups_phi_table(fits_groups_phi_table):
+    df = fits_groups_phi_table
+    return df.transpose().groupby(level=1).transpose()
 
 @table
 @check_speclabels_different
