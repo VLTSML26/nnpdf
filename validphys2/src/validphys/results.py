@@ -941,7 +941,7 @@ def fits_groups_phi_table(fits_name_with_covmat_label, fits_groups, fits_groups_
 @table
 def mean_fits_groups_phi_table(fits_groups_phi_table):
     df = fits_groups_phi_table
-    return df.transpose().groupby(level=1).transpose()
+    return df.transpose().groupby(level=1).mean().transpose()
 
 @table
 @check_speclabels_different
