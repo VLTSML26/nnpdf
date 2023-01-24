@@ -722,7 +722,14 @@ class MulticlosureBiasVariancePDFPlotter(PDFPlotter):
         handles.append(biasline)
         labels.append(label)
 
-        return [variance_up, variance_down]
+        dic = {
+            'var up': variance_up,
+            'var down': variance_down,
+            'bias up': bias_up,
+            'bias down': bias_down,
+            'mean cv': mean_cvs
+        }
+        return dic
 
     def legend(self, flstate):
         return flstate.ax.legend(flstate.handles, flstate.labels,
@@ -730,6 +737,140 @@ class MulticlosureBiasVariancePDFPlotter(PDFPlotter):
                                              plotutils.ComposedHandler()
                                              }
                                  )
+
+    def __call__(self,):
+        if not self.xplotting_grids:
+            return
+
+        basis = self.firstgrid.basis
+
+        for flindex, fl in enumerate(self.firstgrid.flavours):
+            fig, ax = plt.subplots()
+            parton_name = basis.elementlabel(fl)
+            flstate = FlavourState(flindex=flindex, fl=fl, fig=fig, ax=ax,
+                                    parton_name=parton_name)
+            self.setup_flavour(flstate)
+            ax.set_title(self.get_title(parton_name))
+
+            all_vals = []
+            for pdf, grid in zip(self.pdfs, self.xplotting_grids):
+                limits = self.draw(pdf, grid, flstate)
+                if limits is not None:
+                    all_vals.append(np.atleast_2d(limits))
+
+            #Note these two lines do not conmute!
+            ax.set_xscale(self.xscale)
+            plotutils.frame_center(ax, self.firstgrid.xgrid, np.concatenate(all_vals))
+            if (self.ymin is not None):
+                ax.set_ylim(ymin=self.ymin)
+            if (self.ymax is not None):
+                ax.set_ylim(ymax=self.ymax)
+
+            ax.set_xlabel('$x$')
+            ax.set_xlim(self.firstgrid.xgrid[0])
+
+
+            ax.set_ylabel(self.get_ylabel(parton_name))
+
+            ax.set_axisbelow(True)
+
+            self.legend(flstate)
+            yield fig, parton_name
+
+
+def func(
+    pdfs,
+    xplotting_grids,
+    xscale: (str, type(None)) = None,
+    normalize_to: (int, str, type(None)) = None,
+    ymin=None,
+    ymax=None,
+    around_mean: bool = True,
+):
+    ilplotter = MulticlosureBiasVariancePDFPlotter(
+        pdfs,
+        xplotting_grids,
+        xscale,
+        normalize_to,
+        ymin,
+        ymax,
+        around_mean=around_mean,
+    )
+
+    basis = ilplotter.firstgrid.basis
+    dics = []
+    for flindex, fl in enumerate(ilplotter.firstgrid.flavours):
+        fig, ax = plt.subplots()
+        parton_name = basis.elementlabel(fl)
+        flstate = FlavourState(flindex=flindex, fl=fl, fig=fig, ax=ax,
+                                parton_name=parton_name)
+        ilplotter.setup_flavour(flstate)
+        for pdf, grid in zip(pdfs, xplotting_grids):
+            dic = ilplotter.draw(pdf, grid, flstate)
+            if dic is not None:
+                dic['parton name'] = parton_name
+                dics.append(dic)
+    return dics
+
+from reportengine import collect
+dataspecs_func = collect("func", ("dataspecs",))
+dataspecs_xplotting_grids = collect("xplotting_grids", ("dataspecs",))
+
+@figuregen
+def yada(xscale, dataspecs, dataspecs_func, dataspecs_xplotting_grids):
+    collected_data = np.asarray(dataspecs_func).transpose()
+    alpha = 0.5
+    xgrid = dataspecs_xplotting_grids[0][0]
+    for i, data in enumerate(collected_data):
+        fig, ax = plt.subplots()
+        ax.set_ylabel(data[0]['parton name'])
+
+        ax.set_xscale(xscale)
+        ax.set_xlabel('$x$')
+        ax.set_xlim(xgrid.xgrid[0])
+
+        # if (self.ymin is not None):
+        #         ax.set_ylim(ymin=self.ymin)
+        #     if (self.ymax is not None):
+        #         ax.set_ylim(ymax=self.ymax)
+
+        labels = []
+        handles = []
+        all_vals = []
+        for dic, dspec in zip(data, dataspecs):
+            variance_up = dic['var up']
+            variance_down = dic['var down']
+            all_vals += [variance_up, variance_down]
+            bias_up = dic['bias up']
+            bias_down = dic['bias down']
+            mean_cvs = dic['mean cv']
+
+            hatchit = plotutils.hatch_iter()
+            outer = True
+            hatch = next(hatchit)
+
+            pcycler = ax._get_lines.prop_cycler
+            next_prop = next(pcycler)
+            color = next_prop['color']
+            ax.fill_between(xgrid.xgrid, variance_up, variance_down, alpha=alpha, color=color, zorder=1)
+            ax.fill_between(xgrid.xgrid, variance_up, variance_down, facecolor='None', alpha=alpha, color=color, zorder=1, hatch=hatch)
+            ax.plot(xgrid.xgrid, bias_up, linestyle="--", color=color)
+            ax.plot(xgrid.xgrid, bias_down, linestyle="--", color=color)
+
+            label = dspec['label']
+            handle = plotutils.HandlerSpec(color=color, alpha=alpha,
+                                               hatch=hatch,
+                                               outer=outer)
+            handles.append(handle)
+            labels.append(label)
+
+        plotutils.frame_center(ax, xgrid.xgrid, np.concatenate(all_vals))
+        ax.legend(handles, labels,
+            handler_map={plotutils.HandlerSpec:
+                        plotutils.ComposedHandler()
+                        }
+            )
+        yield fig
 
 @figuregen
 @check_pdf_normalize_to
