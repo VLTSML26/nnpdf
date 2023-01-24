@@ -827,12 +827,7 @@ def yada(xscale, dataspecs, dataspecs_func, dataspecs_xplotting_grids):
 
         ax.set_xscale(xscale)
         ax.set_xlabel('$x$')
-        ax.set_xlim(xgrid.xgrid[0])
-
-        # if (self.ymin is not None):
-        #         ax.set_ylim(ymin=self.ymin)
-        #     if (self.ymax is not None):
-        #         ax.set_ylim(ymax=self.ymax)
+        ax.set_xlim(xgrid.xgrid[0], xgrid.xgrid[-1])
 
         labels = []
         handles = []
@@ -864,7 +859,9 @@ def yada(xscale, dataspecs, dataspecs_func, dataspecs_xplotting_grids):
             handles.append(handle)
             labels.append(label)
 
-        plotutils.frame_center(ax, xgrid.xgrid, np.concatenate(all_vals))
+        # plotutils.frame_center(ax, xgrid.xgrid, np.concatenate(all_vals))
+        ax.set_ylim(0.9, 1.17)
+        ax.set_axisbelow(True)
         ax.legend(handles, labels,
             handler_map={plotutils.HandlerSpec:
                         plotutils.ComposedHandler()
