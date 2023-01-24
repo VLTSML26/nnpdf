@@ -754,8 +754,9 @@ class MulticlosureBiasVariancePDFPlotter(PDFPlotter):
 
             all_vals = []
             for pdf, grid in zip(self.pdfs, self.xplotting_grids):
-                limits = self.draw(pdf, grid, flstate)
-                if limits is not None:
+                dictionary = self.draw(pdf, grid, flstate)
+                if dictionary is not None:
+                    limits = [dictionary['var up'], dictionary['var down']]
                     all_vals.append(np.atleast_2d(limits))
 
             #Note these two lines do not conmute!
@@ -778,7 +779,7 @@ class MulticlosureBiasVariancePDFPlotter(PDFPlotter):
             yield fig, parton_name
 
 
-def func(
+def _multiclosure_dataspecs_biasvariance_underlyingpdf(
     pdfs,
     xplotting_grids,
     xscale: (str, type(None)) = None,
@@ -813,12 +814,19 @@ def func(
     return dics
 
 from reportengine import collect
-dataspecs_func = collect("func", ("dataspecs",))
+
+multiclosure_dataspecs_biasvariance_underlyingpdf = collect("_multiclosure_dataspecs_biasvariance_underlyingpdf", ("dataspecs",))
 dataspecs_xplotting_grids = collect("xplotting_grids", ("dataspecs",))
 
 @figuregen
-def yada(xscale, dataspecs, dataspecs_func, dataspecs_xplotting_grids):
-    collected_data = np.asarray(dataspecs_func).transpose()
+def plot_multiclosure_dataspecs_biasvariance_underlyingpdf(xscale, 
+    dataspecs, 
+    multiclosure_dataspecs_biasvariance_underlyingpdf, 
+    dataspecs_xplotting_grids
+):
+    collected_data = np.asarray(
+        multiclosure_dataspecs_biasvariance_underlyingpdf
+    ).transpose()
     alpha = 0.5
     xgrid = dataspecs_xplotting_grids[0][0]
     for i, data in enumerate(collected_data):
@@ -848,7 +856,7 @@ def yada(xscale, dataspecs, dataspecs_func, dataspecs_xplotting_grids):
             next_prop = next(pcycler)
             color = next_prop['color']
             ax.fill_between(xgrid.xgrid, variance_up, variance_down, alpha=alpha, color=color, zorder=1)
-            ax.fill_between(xgrid.xgrid, variance_up, variance_down, facecolor='None', alpha=alpha, color=color, zorder=1, hatch=hatch)
+            ax.fill_between(xgrid.xgrid, variance_up, variance_down, facecolor='None', alpha=alpha, edgecolor=color, zorder=1, hatch=hatch)
             ax.plot(xgrid.xgrid, bias_up, linestyle="--", color=color)
             ax.plot(xgrid.xgrid, bias_down, linestyle="--", color=color)
 
