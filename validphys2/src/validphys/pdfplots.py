@@ -812,7 +812,7 @@ def _multiclosure_dataspecs_biasvariance_underlyingpdf(
         for pdf, grid in zip(pdfs, xplotting_grids):
             dic = ilplotter.draw(pdf, grid, flstate)
             if dic is not None:
-                dic['parton name'] = parton_name
+                dic['parton name'] = ilplotter.get_title(parton_name)
                 dics.append(dic)
     return dics
 
@@ -868,10 +868,11 @@ def plot_multiclosure_dataspecs_biasvariance_underlyingpdf(xscale,
             handles.append(handle)
             labels.append(label)
 
+        ax.set_title(dic['parton name'])
         ax.set_xscale(xscale)
         # plotutils.frame_center(ax, xgrid.xgrid, np.concatenate(all_vals))
         ax.set_ylim(0.9, 1.17)
-        ax.set_ylabel(data[0]['parton name'])
+        # ax.set_ylabel(data[0]['parton name'])
 
         ax.set_xlabel('$x$')
         ax.set_xlim(xgrid.xgrid[0], xgrid.xgrid[-1])
