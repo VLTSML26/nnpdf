@@ -757,6 +757,9 @@ class MulticlosureBiasVariancePDFPlotter(PDFPlotter):
                 dictionary = self.draw(pdf, grid, flstate)
                 if dictionary is not None:
                     limits = [dictionary['var up'], dictionary['var down']]
+                    # print(parton_name)
+                    # print(dictionary['var up'])
+                    # print('\n\n')
                     all_vals.append(np.atleast_2d(limits))
 
             #Note these two lines do not conmute!
@@ -778,7 +781,7 @@ class MulticlosureBiasVariancePDFPlotter(PDFPlotter):
             self.legend(flstate)
             yield fig, parton_name
 
-
+@check_pdf_normalize_to
 def _multiclosure_dataspecs_biasvariance_underlyingpdf(
     pdfs,
     xplotting_grids,
@@ -829,18 +832,16 @@ def plot_multiclosure_dataspecs_biasvariance_underlyingpdf(xscale,
     ).transpose()
     alpha = 0.5
     xgrid = dataspecs_xplotting_grids[0][0]
-    for i, data in enumerate(collected_data):
+    for data in collected_data:
         fig, ax = plt.subplots()
-        ax.set_ylabel(data[0]['parton name'])
-
-        ax.set_xscale(xscale)
-        ax.set_xlabel('$x$')
-        ax.set_xlim(xgrid.xgrid[0], xgrid.xgrid[-1])
 
         labels = []
         handles = []
         all_vals = []
         for dic, dspec in zip(data, dataspecs):
+            # print(dspec['label'], dic['parton name'])
+            # print(dic['var up'])
+            # print('\n\n')
             variance_up = dic['var up']
             variance_down = dic['var down']
             all_vals += [variance_up, variance_down]
@@ -867,8 +868,13 @@ def plot_multiclosure_dataspecs_biasvariance_underlyingpdf(xscale,
             handles.append(handle)
             labels.append(label)
 
+        ax.set_xscale(xscale)
         # plotutils.frame_center(ax, xgrid.xgrid, np.concatenate(all_vals))
         ax.set_ylim(0.9, 1.17)
+        ax.set_ylabel(data[0]['parton name'])
+
+        ax.set_xlabel('$x$')
+        ax.set_xlim(xgrid.xgrid[0], xgrid.xgrid[-1])
         ax.set_axisbelow(True)
         ax.legend(handles, labels,
             handler_map={plotutils.HandlerSpec:
